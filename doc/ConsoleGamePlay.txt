@@ -1,0 +1,76 @@
+Console Game Play
+=================
+
+Human vs. Human
+---------------
+
+while true:
+    X = human
+    O = human
+    current player = X
+    reset board
+    while winner is none:
+        indicate current player
+        show board
+        get move from current player
+        update board with move
+        switch current player to opposite piece
+    show board
+    display winner
+    ask play again
+    if no, break
+
+Human vs. Computer
+------------------
+
+while true:
+    ask if human wants X or O
+    if X:
+        X = human
+        O = computer
+        load O values from file
+    else:
+        X = computer
+        O = human
+        load X values from file
+    current player = X
+    reset board
+    while winner is none:
+        indicate current player
+        show board
+        get move from current player
+        update board with move
+        switch current player to opposite piece
+    show board
+    display winner
+    ask play again
+    if no, break
+
+Computer vs. Computer
+---------------------
+
+reset stats
+for n = 1 to #games
+    X = computer
+    O = computer
+    current player = X
+    while winner is none:
+        get move from current player
+        update board with move
+        update opposite piece with move
+        switch current player to opposite piece
+    if X wins:
+        reward X with 1
+        reward O with 0
+        inc X wins stats
+    elif O wins:
+        reward X with 0
+        reward O with 1
+        inc O wins stats
+    else:
+        reward X with X draw reward
+        reward O with O draw reward
+
+display stats
+save X values to file
+save O values to file
