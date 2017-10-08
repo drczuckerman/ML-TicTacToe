@@ -42,5 +42,20 @@ class TDLearningPlayer(Player):
             winner = None
 
     def get_move(self):
-        r = random.random()
+        return self._choose_random_move() if random.random() < self.epsilon else self._choose_best_move()
+        
+    def _choose_random_move(self):
         return random.choice(self.board.get_available_moves())
+
+    def _choose_best_move(self):
+        max_value = -1
+        best_moves = []
+        for position in self.board.get_available_moves():
+            with self.board.try_move(position, self.piece) as (winner, state):
+                value = self._get_value(state, winner)
+            if value > max_value:
+                max_value = value
+                best_moves = [position]
+            elif value == max_value:
+                best_moves.append(position)
+        return random.choice(best_moves)

@@ -5,6 +5,13 @@ from td_learning_player import TDLearningPlayer
 from board import Board
 from board_test_utils import get_board_state_tuple, set_board
 
+class MockRandom(object):
+    def __init__(self, choice_index):
+        self.choice_index = choice_index
+
+    def choice(self, choices):
+        return choices[self.choice_index]
+
 class TestTdLearningPlayer(unittest.TestCase):
     def setUp(self):
         self.player = TDLearningPlayer()
@@ -38,7 +45,8 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.player.set_reward(winner)
         self.assertEqual(values_dict, self.player.values)
 
-    def assert_get_move_is(self, position, pieces=""):
+    def assert_get_move_is(self, position, piece, pieces=""):
+        self.player.set_piece(piece)
         set_board(self.board, pieces)
         self.assertEqual(position, self.player.get_move())
 
@@ -154,9 +162,33 @@ class TestTdLearningPlayer(unittest.TestCase):
              "XO-|XO-|X--"],
             Board.X)
 
-    @patch('td_learning_player.random')
-    def test_get_move_does_random_move_if_random_less_than_epsilon(self, random_mock):
-        random_mock.random.return_value = 0.1
-        random_mock.choice.return_value = 4
-        self.assert_get_move_is(4, pieces="-X-|O--|---")
-        random_mock.choice.assert_called_once_with([0, 2, 4, 5, 6, 7, 8])
+    @patch('td_learning_player.random.choice')
+    @patch('td_learning_player.random.random')
+    def test_get_move_chooses_random_available_move_if_random_lt_epsilon(
+            self, random_mock, choice_mock):
+        random_mock.return_value = 0.099
+        choice_mock.side_effect = MockRandom(4).choice
+        self.assert_get_move_is(6, Board.X, "X--|-O-|---")
+        choice_mock.assert_called_once_with([1, 2, 3, 5, 6, 7, 8])
+
+    @patch('td_learning_player.random.choice')
+    @patch('td_learning_player.random.random')
+    def test_get_move_chooses_best_available_move_if_random_gte_epsilon(
+            self, random_mock, choice_mock):
+        random_mock.return_value = 0.1
+        choice_mock.side_effect = MockRandom(0).choice
+        self.player.values[get_board_state_tuple("---|-XO|---")] = 0.501
+        self.assert_get_move_is(5, Board.O, "---|-X-|---")
+        choice_mock.assert_called_once_with([5])
+
+    @patch('td_learning_player.random.choice')
+    @patch('td_learning_player.random.random')
+    def test_get_move_chooses_random_best_available_move_if_random_gte_epsilon_and_multiple_bests(
+            self, random_mock, choice_mock):
+        random_mock.return_value = 0.1
+        choice_mock.side_effect = MockRandom(1).choice
+        self.player.values[get_board_state_tuple("X--|-XO|---")] = 0.501
+        self.player.values[get_board_state_tuple("--X|-XO|---")] = 0.501
+        self.player.values[get_board_state_tuple("---|-XO|X--")] = 0.501
+        self.assert_get_move_is(2, Board.X, "---|-XO|---")
+        choice_mock.assert_called_once_with([0, 2, 6])
