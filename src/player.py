@@ -5,17 +5,14 @@ class Player(object):
         self.board = None
         self.piece = None
         
+    def get_move(self):
+        pass
+        
     def set_board(self, board):
         self.board = board
         
     def set_piece(self, piece):
         self.piece = piece
 
-    def set_params(self, **kwargs):
-        pass
-
-    def store_state(self):
-        pass
-
-    def set_reward(self, winner):
+    def reset(self):
         pass

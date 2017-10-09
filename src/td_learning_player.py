@@ -1,22 +1,43 @@
 import random
-from player import Player
+from computer_player import ComputerPlayer
 from board import Board
 
-class TDLearningPlayer(Player):
+class TDLearningPlayer(ComputerPlayer):
+    DEFAULT_ALPHA = 0.1
+    DEFAULT_EPSILON = 0.1
+    DEFAULT_X_DRAW_REWARD = 0.5
+    DEFAULT_O_DRAW_REWARD = 0.5
+    
     def __init__(self):
         super().__init__()
         self.values = {}
-        self.states = []
+        self.reset()
 
     def set_params(self, **kwargs):
         super().set_params(**kwargs)
-        self.alpha = kwargs.get("alpha", 0.5)
-        self.epsilon = kwargs.get("epsilon", 0.1)
-        self.draw_rewards = {Board.X: kwargs.get("x_draw_reward", 0.5),
-                             Board.O: kwargs.get("o_draw_reward", 0.5)}
+        self.alpha = kwargs.get("alpha", self.DEFAULT_ALPHA)
+        self.epsilon = kwargs.get("epsilon", self.DEFAULT_EPSILON)
+        self.draw_rewards = {Board.X: kwargs.get("x_draw_reward", self.DEFAULT_X_DRAW_REWARD),
+                             Board.O: kwargs.get("o_draw_reward", self.DEFAULT_O_DRAW_REWARD)}
 
     def store_state(self):
         self.states.append(tuple(self.board.state))
+        
+    def reset(self):
+        super().reset()
+        self.states = []
+
+    def disable_learning(self):
+        super().disable_learning()
+        self.alpha_save = self.alpha
+        self.epsilon_save = self.epsilon
+        self.alpha = 0.0
+        self.epsilon = 0.0
+
+    def enable_learning(self):
+        super().enable_learning()
+        self.alpha = self.alpha_save
+        self.epsilon = self.epsilon_save
 
     def _get_reward(self, winner):
         if winner == Board.DRAW:
@@ -25,7 +46,7 @@ class TDLearningPlayer(Player):
             return 1.0
         return 0.0
 
-    def _get_value(self, state, winner):
+    def _get_value(self, state, winner=None):
         value = self.values.get(state)
         if value is None:
             value = 0.5 if winner is None else self._get_reward(winner)
@@ -33,13 +54,12 @@ class TDLearningPlayer(Player):
         return value
 
     def set_reward(self, winner):
-        last_value = self._get_reward(winner)
-        for state in reversed(self.states):
-            current_value = self._get_value(state, winner)
+        last_value = self._get_value(self.states[-1], winner)
+        for state in reversed(self.states[:-1]):
+            current_value = self._get_value(state)
             current_value += self.alpha*(last_value - current_value)
             self.values[state] = current_value
             last_value = current_value
-            winner = None
 
     def get_move(self):
         return self._choose_random_move() if random.random() < self.epsilon else self._choose_best_move()

@@ -4,13 +4,7 @@ from mock import patch
 from td_learning_player import TDLearningPlayer
 from board import Board
 from board_test_utils import get_board_state_tuple, set_board
-
-class MockRandom(object):
-    def __init__(self, choice_index):
-        self.choice_index = choice_index
-
-    def choice(self, choices):
-        return choices[self.choice_index]
+from mock_random import MockRandom
 
 class TestTdLearningPlayer(unittest.TestCase):
     def setUp(self):
@@ -24,7 +18,7 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.player.store_state()
         states = list(map(get_board_state_tuple, pieces_list))
         self.assertEqual(self.player.states, states)
-
+        
     def assert_get_reward_is(self, reward, winner, piece):
         self.player.set_piece(piece)
         self.assertAlmostEqual(reward, self.player._get_reward(winner))
@@ -58,7 +52,7 @@ class TestTdLearningPlayer(unittest.TestCase):
     def test_constructor_initializes_empty_values(self):
         self.assertEqual({}, self.player.values)
         
-    def test_constructor_initialize_stored_states(self):
+    def test_constructor_initializes_stored_states(self):
         self.assertEqual([], self.player.states)
 
     def test_set_board(self):
@@ -75,45 +69,69 @@ class TestTdLearningPlayer(unittest.TestCase):
 
     def test_set_params_sets_default_alpha_if_not_specified(self):
         self.player.set_params()
-        self.assertAlmostEqual(0.5, self.player.alpha)
+        self.assertAlmostEqual(TDLearningPlayer.DEFAULT_ALPHA, self.player.alpha)
 
     def test_set_params_sets_alpha_if_specified(self):
-        self.player.set_params(alpha=0.1)
-        self.assertAlmostEqual(0.1, self.player.alpha)
+        self.player.set_params(alpha=TDLearningPlayer.DEFAULT_ALPHA*2)
+        self.assertAlmostEqual(TDLearningPlayer.DEFAULT_ALPHA*2, self.player.alpha)
 
     def test_set_params_sets_default_epsilon_if_not_specified(self):
         self.player.set_params()
-        self.assertAlmostEqual(0.1, self.player.epsilon)
+        self.assertAlmostEqual(TDLearningPlayer.DEFAULT_EPSILON, self.player.epsilon)
 
     def test_set_params_sets_epsilon_if_specified(self):
-        self.player.set_params(epsilon=0.4)
-        self.assertAlmostEqual(0.4, self.player.epsilon)
+        self.player.set_params(epsilon=TDLearningPlayer.DEFAULT_EPSILON*2)
+        self.assertAlmostEqual(TDLearningPlayer.DEFAULT_EPSILON*2, self.player.epsilon)
 
     def test_set_params_sets_default_draw_rewards_if_not_specified(self):
         self.player.set_params()
-        self.assertAlmostEqual(0.5, self.player.draw_rewards[Board.X])
-        self.assertAlmostEqual(0.5, self.player.draw_rewards[Board.O])
+        self.assertAlmostEqual(TDLearningPlayer.DEFAULT_X_DRAW_REWARD, self.player.draw_rewards[Board.X])
+        self.assertAlmostEqual(TDLearningPlayer.DEFAULT_O_DRAW_REWARD, self.player.draw_rewards[Board.O])
 
     def test_set_params_sets_specified_x_reward_if_specified(self):
-        self.player.set_params(x_draw_reward=0.4)
-        self.assertAlmostEqual(0.4, self.player.draw_rewards[Board.X])
-        self.assertAlmostEqual(0.5, self.player.draw_rewards[Board.O])
+        self.player.set_params(x_draw_reward=TDLearningPlayer.DEFAULT_X_DRAW_REWARD-0.1)
+        self.assertAlmostEqual(TDLearningPlayer.DEFAULT_X_DRAW_REWARD-0.1, self.player.draw_rewards[Board.X])
+        self.assertAlmostEqual(TDLearningPlayer.DEFAULT_O_DRAW_REWARD, self.player.draw_rewards[Board.O])
 
     def test_set_params_sets_specified_o_reward_if_specified(self):
-        self.player.set_params(o_draw_reward=0.6)
-        self.assertAlmostEqual(0.5, self.player.draw_rewards[Board.X])
-        self.assertAlmostEqual(0.6, self.player.draw_rewards[Board.O])
+        self.player.set_params(o_draw_reward=TDLearningPlayer.DEFAULT_O_DRAW_REWARD+0.1)
+        self.assertAlmostEqual(TDLearningPlayer.DEFAULT_X_DRAW_REWARD, self.player.draw_rewards[Board.X])
+        self.assertAlmostEqual(TDLearningPlayer.DEFAULT_O_DRAW_REWARD+0.1, self.player.draw_rewards[Board.O])
 
     def test_set_params_sets_specified_x_and_o_reward_if_specified(self):
-        self.player.set_params(x_draw_reward=0.44, o_draw_reward=0.56)
-        self.assertAlmostEqual(0.44, self.player.draw_rewards[Board.X])
-        self.assertAlmostEqual(0.56, self.player.draw_rewards[Board.O])
+        self.player.set_params(
+            x_draw_reward=TDLearningPlayer.DEFAULT_X_DRAW_REWARD-0.01, 
+            o_draw_reward=TDLearningPlayer.DEFAULT_O_DRAW_REWARD+0.01)
+        self.assertAlmostEqual(
+            TDLearningPlayer.DEFAULT_X_DRAW_REWARD-0.01, self.player.draw_rewards[Board.X])
+        self.assertAlmostEqual(
+            TDLearningPlayer.DEFAULT_O_DRAW_REWARD+0.01, self.player.draw_rewards[Board.O])
 
     def test_store_state_appends_state(self):
         self.assert_stored_states_are(["X--|---|---"], 0, Board.X)
         self.assert_stored_states_are(["X--|---|---", "XO-|---|---"], 1, Board.O)
         self.assert_stored_states_are(["X--|---|---", "XO-|---|---", "XOX|---|---"], 2, Board.X)
         
+    def test_reset_initializes_stored_states(self):
+        self.assert_stored_states_are(["---|-X-|---"], 4, Board.X)
+        self.player.reset()
+        self.assertEqual([], self.player.states)
+
+    def test_disable_learning_disables_learning_params_and_saves_old_params(self):
+        self.player.set_params(alpha=0.4, epsilon=0.2)
+        self.player.disable_learning()
+        self.assertEqual(0.0, self.player.alpha)
+        self.assertEqual(0.0, self.player.epsilon)
+        self.assertAlmostEqual(0.4, self.player.alpha_save)
+        self.assertAlmostEqual(0.2, self.player.epsilon_save)
+
+    def test_enable_learning_restores_learning_params(self):
+        self.player.set_params(alpha=0.3, epsilon=0.05)
+        self.player.disable_learning()
+        self.player.enable_learning()
+        self.assertAlmostEqual(0.3, self.player.alpha)
+        self.assertAlmostEqual(0.05, self.player.epsilon)
+
     def test_get_reward_returns_1_if_winner_is_same_as_piece(self):
         self.assert_get_reward_is(1.0, Board.X, Board.X)
         self.assert_get_reward_is(1.0, Board.O, Board.O)

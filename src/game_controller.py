@@ -6,6 +6,7 @@ class GameController(object):
         self.board = Board()
         self.player_number = 0
         for player, piece in zip(self.players, [Board.X, Board.O]):
+            player.reset()
             player.set_board(self.board)
             player.set_piece(piece)
             

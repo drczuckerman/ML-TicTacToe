@@ -57,14 +57,6 @@ class TestHumanPlayer(unittest.TestCase):
         self.assertEqual([call("Enter move: ")]*3, input_mock.call_args_list)
         self.assertEqual("Invalid move\nInvalid move\n", stdout_mock.getvalue())
 
-    def test_set_params(self):
-        self.player.set_params(foo=1, bar=2)
-        # Should not assert
-
-    def test_store_state(self):
-        self.player.store_state()
-        # Should not assert
-
-    def test_set_reward(self):
-        self.player.set_reward(Board.X)
+    def test_reset(self):
+        self.player.reset()
         # Should not assert

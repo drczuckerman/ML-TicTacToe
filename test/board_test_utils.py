@@ -50,3 +50,8 @@ def get_expected_formatted_board(formatted_pieces):
             position += 1
 
     return expected_output
+
+def assert_get_move_is(cls, player, board, position, piece, pieces=""):
+    player.set_piece(piece)
+    set_board(board, pieces)
+    cls.assertEqual(position, player.get_move())
