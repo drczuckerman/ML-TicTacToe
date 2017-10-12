@@ -15,6 +15,7 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.board = Board()
         self.player.set_board(self.board)
         self.player.set_params()
+        self.player.enable_learning()
 
     def assert_stored_states_are(self, pieces_list, position, piece):
         self.board.make_move(position, piece)
@@ -80,6 +81,10 @@ class TestTdLearningPlayer(unittest.TestCase):
     def test_constructor_initializes_stored_states(self):
         self.assertEqual([], self.player.states)
 
+    def test_constructor_disables_learning(self):
+        player = TDLearningPlayer()
+        self.assertFalse(player.learning)
+
     def test_set_board(self):
         self.assertEqual(self.board, self.player.board)
 
@@ -142,20 +147,13 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.player.reset()
         self.assertEqual([], self.player.states)
 
-    def test_disable_learning_disables_learning_params_and_saves_old_params(self):
-        self.player.set_params(alpha=0.4, epsilon=0.2)
+    def test_disable_learning_disables_learning(self):
         self.player.disable_learning()
-        self.assertEqual(0.0, self.player.alpha)
-        self.assertEqual(0.0, self.player.epsilon)
-        self.assertAlmostEqual(0.4, self.player.alpha_save)
-        self.assertAlmostEqual(0.2, self.player.epsilon_save)
+        self.assertFalse(self.player.learning)
 
-    def test_enable_learning_restores_learning_params(self):
-        self.player.set_params(alpha=0.3, epsilon=0.05)
-        self.player.disable_learning()
+    def test_enable_learning_enables_learning(self):
         self.player.enable_learning()
-        self.assertAlmostEqual(0.3, self.player.alpha)
-        self.assertAlmostEqual(0.05, self.player.epsilon)
+        self.assertTrue(self.player.learning)
 
     def test_get_reward_returns_1_if_winner_is_same_as_piece(self):
         self.assert_get_reward_is(1.0, Board.X, Board.X)
@@ -205,6 +203,22 @@ class TestTdLearningPlayer(unittest.TestCase):
              "XO-|XO-|X--"],
             Board.X)
 
+    def test_set_reward_does_not_update_values_for_each_state_if_learning_disabled(self):
+        self.player.disable_learning()
+        self.player.values[get_board_state_tuple("---|-X-|---")] = 0.6
+        self.player.values[get_board_state_tuple("-O-|-X-|---")] = 0.55
+        self.player.values[get_board_state_tuple("-O-|-X-|--X")] = 0.7
+        self.player.values[get_board_state_tuple("-OO|-X-|--X")] = 0.85
+        self.player.values[get_board_state_tuple("XOO|-X-|--X")] = 1.0
+        self.assert_values_after_reward_are(
+            [0.6, 0.55, 0.7, 0.85, 1.0],
+            ["---|-X-|---",
+             "-O-|-X-|---",
+             "-O-|-X-|--X",
+             "-OO|-X-|--X",
+             "XOO|-X-|--X"],
+            Board.X)
+
     @patch('td_learning_player.random.choice')
     @patch('td_learning_player.random.random')
     def test_get_move_chooses_random_available_move_if_random_lt_epsilon(
@@ -235,6 +249,17 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.player.values[get_board_state_tuple("---|-XO|X--")] = 0.501
         self.assert_get_move_is(2, Board.X, "---|-XO|---")
         choice_mock.assert_called_once_with([0, 2, 6])
+
+    @patch('td_learning_player.random.choice')
+    @patch('td_learning_player.random.random')
+    def test_get_move_chooses_best_available_move_if_learning_disabled(self, random_mock, choice_mock):
+        self.player.disable_learning()
+        random_mock.return_value = 0.099
+        choice_mock.side_effect = MockRandom(0).choice
+        self.player.values[get_board_state_tuple("---|-O-|--X")] = 0.501
+        self.assert_get_move_is(4, Board.O, "---|---|--X")
+        random_mock.assert_not_called()
+        choice_mock.assert_called_once_with([4])
 
     def test_load_stores_values_for_x(self):
         values = {"foo": "bar"}

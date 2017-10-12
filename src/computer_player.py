@@ -3,6 +3,10 @@ import os
 from player import Player
 
 class ComputerPlayer(Player):
+    def __init__(self):
+        super().__init__()
+        self.disable_learning()
+
     def set_params(self, **kwargs):
         pass
 
@@ -13,10 +17,10 @@ class ComputerPlayer(Player):
         pass
 
     def disable_learning(self):
-        pass
+        self.learning = False
 
     def enable_learning(self):
-        pass
+        self.learning = True
 
     def load(self):
         pass

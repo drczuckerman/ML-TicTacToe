@@ -29,18 +29,6 @@ class TDLearningPlayer(ComputerPlayer):
         super().reset()
         self.states = []
 
-    def disable_learning(self):
-        super().disable_learning()
-        self.alpha_save = self.alpha
-        self.epsilon_save = self.epsilon
-        self.alpha = 0.0
-        self.epsilon = 0.0
-
-    def enable_learning(self):
-        super().enable_learning()
-        self.alpha = self.alpha_save
-        self.epsilon = self.epsilon_save
-
     def _get_reward(self, winner):
         if winner == Board.DRAW:
             return self.draw_rewards[self.piece]
@@ -56,15 +44,17 @@ class TDLearningPlayer(ComputerPlayer):
         return value
 
     def set_reward(self, winner):
-        last_value = self._get_value(self.states[-1], winner)
-        for state in reversed(self.states[:-1]):
-            current_value = self._get_value(state)
-            current_value += self.alpha*(last_value - current_value)
-            self.values[state] = current_value
-            last_value = current_value
+        if self.learning:
+            last_value = self._get_value(self.states[-1], winner)
+            for state in reversed(self.states[:-1]):
+                current_value = self._get_value(state)
+                current_value += self.alpha*(last_value - current_value)
+                self.values[state] = current_value
+                last_value = current_value
 
     def get_move(self):
-        return self._choose_random_move() if random.random() < self.epsilon else self._choose_best_move()
+        return self._choose_random_move() if self.learning and random.random() < self.epsilon \
+            else self._choose_best_move()
         
     def _choose_random_move(self):
         return random.choice(self.board.get_available_moves())
