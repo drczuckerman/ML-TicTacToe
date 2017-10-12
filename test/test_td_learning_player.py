@@ -1,6 +1,9 @@
 import unittest
 import random
+import pickle
+import os
 from mock import patch
+from io import BytesIO
 from td_learning_player import TDLearningPlayer
 from board import Board
 from board_test_utils import get_board_state_tuple, set_board
@@ -43,6 +46,28 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.player.set_piece(piece)
         set_board(self.board, pieces)
         self.assertEqual(position, self.player.get_move())
+        
+    @patch('builtins.open', create=True)
+    def assert_load_values_are(self, values, piece, filename, open_mock):
+        self.player.set_piece(piece)
+        open_mock.return_value = BytesIO(pickle.dumps(values))
+        self.player.load()
+        self.assertEqual(values, self.player.values)
+        self.assert_file_opened_with(filename, "r", open_mock)
+
+    def assert_file_opened_with(self, filename, mode, open_mock):
+        open_mock.assert_called_once_with(
+            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", filename)), mode)
+    
+    @patch('pickle.dump')
+    @patch('builtins.open', create=True)
+    def assert_save_values_are(self, values, piece, filename, open_mock, dump_mock):
+        open_mock.return_value = BytesIO()
+        self.player.set_piece(piece)
+        self.player.values = values
+        self.player.save()
+        self.assert_file_opened_with(filename, "w", open_mock)
+        dump_mock.assert_called_once_with(values, open_mock.return_value)
 
     def test_constructor_initializes_board_and_piece_to_none(self):
         player = TDLearningPlayer()
@@ -210,3 +235,19 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.player.values[get_board_state_tuple("---|-XO|X--")] = 0.501
         self.assert_get_move_is(2, Board.X, "---|-XO|---")
         choice_mock.assert_called_once_with([0, 2, 6])
+
+    def test_load_stores_values_for_x(self):
+        values = {"foo": "bar"}
+        self.assert_load_values_are(values, Board.X, "TDLearningX.pkl")
+
+    def test_load_stores_values_for_o(self):
+        values = {"bar": "foo"}
+        self.assert_load_values_are(values, Board.O, "TDLearningO.pkl")
+
+    def test_save_stores_values_for_x(self):
+        values = {"baz": "quux"}
+        self.assert_save_values_are(values, Board.X, "TDLearningX.pkl")
+
+    def test_save_stores_values_for_o(self):
+        values = {"quux": "baz"}
+        self.assert_save_values_are(values, Board.O, "TDLearningO.pkl")

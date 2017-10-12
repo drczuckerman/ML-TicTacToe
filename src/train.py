@@ -25,7 +25,7 @@ class Trainer(object):
         parser.add_argument(
             "-g", "--num-games", default=20000, type=int, help="number of games to play")
         parser.add_argument(
-            "-b", "--num-batches", default=100, type=int, help="number of batches to gather stats")
+            "-b", "--num-batches", default=1000, type=int, help="number of batches to gather stats")
         parser.add_argument(
             "-l", "--learning-type", choices=["TD"], default="TD", dest="learning_type", metavar="LEARNING_TYPE",
             help=textwrap.dedent("""\
@@ -44,16 +44,22 @@ where LEARNING_TYPE is as follows:
         return player
 
     def train(self):
-        stats = {"training": [], "competing": [], "x_vs_random": [], "o_vs_random": []}
+        stats = \
+        {
+            "train_self": [], "train_x_vs_random": [], "train_o_vs_random": [],
+            "compete_self": [], "compete_x_vs_random": [], "compete_o_vs_random": []
+        }
         for game_number in range(0, self.num_games, self.num_batches):
             self._show_game_numbers(game_number)
-            stats["training"].append(self._train_batch(self.player1, self.player2, "Train"))
-            self._train_batch(self.player1, self.random_player, "Train X vs. random")
-            self._train_batch(self.random_player, self.player2, "Train O vs. random")
-            stats["competing"].append(self._compete_batch(self.player1, self.player2, "Compete"))
-            stats["x_vs_random"].append(
+            stats["train_self"].append(self._train_batch(self.player1, self.player2, "Train self"))
+            stats["train_x_vs_random"].append(
+                self._train_batch(self.player1, self.random_player, "Train X vs. random"))
+            stats["train_o_vs_random"].append(
+                self._train_batch(self.random_player, self.player2, "Train O vs. random"))
+            stats["compete_self"].append(self._compete_batch(self.player1, self.player2, "Compete self"))
+            stats["compete_x_vs_random"].append(
                 self._compete_batch(self.player1, self.random_player, "Compete X vs. Random"))
-            stats["o_vs_random"].append(
+            stats["compete_o_vs_random"].append(
                 self._compete_batch(self.random_player, self.player2, "Compete O vs. Random"))
         return stats
 
@@ -112,36 +118,37 @@ where LEARNING_TYPE is as follows:
         return winner
 
     def plot_stats(self, stats):
-        plt.figure(1)
-        self._plot_stats_subplot((2,1,1), "Training", stats["training"], True)
-        self._plot_stats_subplot((2,1,2), "Competing", stats["competing"], False)
+        self._plot_figure("Training", stats, "train")
+        self._plot_figure("Competing", stats, "compete")
+        
+    def _plot_figure(self, title, stats, key_prefix):
+        f, ax = plt.subplots(3, 1)
+        ax[0].set_title("{} - {} game trials".format(title, self.num_batches))
+        self._plot_stats_subplot(
+            ax[0], "Self", stats[key_prefix+ "_self"], [Board.O, Board.X], True)
+        self._plot_stats_subplot(
+            ax[1], "X vs Random", stats[key_prefix + "_x_vs_random"], [Board.O], False)
+        self._plot_stats_subplot(
+            ax[2], "O vs Random", stats[key_prefix + "_o_vs_random"], [Board.X], False)
         plt.xlabel("Game #")
+        f.subplots_adjust(hspace=0.35)
         plt.show()
-        
-        plt.figure(2)
-        self._plot_stats_subplot((2,1,1), "X vs. Random", stats["x_vs_random"], True)
-        self._plot_stats_subplot((2,1,2), "O vs. Random", stats["o_vs_random"], False)
-        plt.xlabel("Game #")
-        plt.show()
-        
-    def _plot_stats_subplot(self, subplot, ylabel, stats, show_legend):
-        ax = plt.subplot(*subplot)
-        
-        x = list(range(0, self.num_games, self.num_batches))
-        colors = ["r", "g", "b"]
-        keys = [Board.X, Board.O, Board.DRAW]
-        for color, key in zip(colors, keys):
+    
+    def _plot_stats_subplot(self, ax, ylabel, stats, keys, show_legend):
+        x = list(range(self.num_batches, self.num_games + self.num_batches, self.num_batches))
+        colors = {Board.O: "r", Board.X: "g"}
+        markers = {Board.O: "x", Board.X: "o"}
+        for key in keys:
             y = [stat[key] for stat in stats]
-            ax.plot(x, y, c=color)
+            ax.plot(x, y, c=colors[key], marker=markers[key], markersize=5)
             
-        plt.ylim([-0.1*self.num_batches, 1.1*self.num_batches])
-        plt.ylabel("{} per {} games".format(ylabel, self.num_batches))
-        plt.grid()
+        ax.set_ylabel(ylabel)
+        ax.grid()
 
         box = ax.get_position()
         ax.set_position([box.x0, box.y0, box.width*0.9, box.height])
         if show_legend:
-            ax.legend(["X Wins", "O Wins", "Draw"], loc="center left", bbox_to_anchor=(1,0.5))
+            ax.legend(["X Losses", "O Losses"], loc="center left", bbox_to_anchor=(1,0.5))
             
     def show_num_states(self):
         print("X has trained {} states".format(len(self.player1.values)))
