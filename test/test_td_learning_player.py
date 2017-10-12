@@ -14,7 +14,6 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.player = TDLearningPlayer()
         self.board = Board()
         self.player.set_board(self.board)
-        self.player.set_params()
         self.player.enable_learning()
 
     def assert_stored_states_are(self, pieces_list, position, piece):
@@ -51,10 +50,15 @@ class TestTdLearningPlayer(unittest.TestCase):
     @patch('builtins.open', create=True)
     def assert_load_values_are(self, values, piece, filename, open_mock):
         self.player.set_piece(piece)
-        open_mock.return_value = BytesIO(pickle.dumps(values))
+        params = {"alpha": 0.2, "epsilon": 0.3, "x_draw_reward": 0.45, "o_draw_reward": 0.55}
+        open_mock.return_value = BytesIO(pickle.dumps({"learned": values, "params": params}))
         self.player.load()
         self.assertEqual(values, self.player.values)
-        self.assert_file_opened_with(filename, "r", open_mock)
+        self.assertAlmostEqual(0.2, self.player.alpha)
+        self.assertAlmostEqual(0.3, self.player.epsilon)
+        self.assertAlmostEqual(0.45, self.player.draw_rewards[Board.X])
+        self.assertAlmostEqual(0.55, self.player.draw_rewards[Board.O])
+        self.assert_file_opened_with(filename, "rb", open_mock)
 
     def assert_file_opened_with(self, filename, mode, open_mock):
         open_mock.assert_called_once_with(
@@ -65,10 +69,12 @@ class TestTdLearningPlayer(unittest.TestCase):
     def assert_save_values_are(self, values, piece, filename, open_mock, dump_mock):
         open_mock.return_value = BytesIO()
         self.player.set_piece(piece)
+        params = {"alpha": 0.05, "epsilon": 0.2, "x_draw_reward": 0.55, "o_draw_reward": 0.45}
+        self.player.set_params(**params)
         self.player.values = values
         self.player.save()
-        self.assert_file_opened_with(filename, "w", open_mock)
-        dump_mock.assert_called_once_with(values, open_mock.return_value)
+        self.assert_file_opened_with(filename, "wb", open_mock)
+        dump_mock.assert_called_once_with({"learned": values, "params": params}, open_mock.return_value)
 
     def test_constructor_initializes_board_and_piece_to_none(self):
         player = TDLearningPlayer()
@@ -85,6 +91,16 @@ class TestTdLearningPlayer(unittest.TestCase):
         player = TDLearningPlayer()
         self.assertFalse(player.learning)
 
+    def test_constructor_initializes_alpha(self):
+        self.assertEqual(TDLearningPlayer.DEFAULT_ALPHA, self.player.alpha)
+
+    def test_constructor_initializes_epsilon(self):
+        self.assertAlmostEqual(TDLearningPlayer.DEFAULT_EPSILON, self.player.epsilon)
+
+    def test_constructor_initializes_draw_reward(self):
+        self.assertAlmostEqual(TDLearningPlayer.DEFAULT_X_DRAW_REWARD, self.player.draw_rewards[Board.X])
+        self.assertAlmostEqual(TDLearningPlayer.DEFAULT_O_DRAW_REWARD, self.player.draw_rewards[Board.O])
+
     def test_set_board(self):
         self.assertEqual(self.board, self.player.board)
 
@@ -98,6 +114,7 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.assertEqual(Board.O, player2.piece)
 
     def test_set_params_sets_default_alpha_if_not_specified(self):
+        self.player.alpha = TDLearningPlayer.DEFAULT_ALPHA+0.1
         self.player.set_params()
         self.assertAlmostEqual(TDLearningPlayer.DEFAULT_ALPHA, self.player.alpha)
 
@@ -106,6 +123,7 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.assertAlmostEqual(TDLearningPlayer.DEFAULT_ALPHA*2, self.player.alpha)
 
     def test_set_params_sets_default_epsilon_if_not_specified(self):
+        self.player.epsilon = TDLearningPlayer.DEFAULT_EPSILON+0.05
         self.player.set_params()
         self.assertAlmostEqual(TDLearningPlayer.DEFAULT_EPSILON, self.player.epsilon)
 
@@ -114,6 +132,8 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.assertAlmostEqual(TDLearningPlayer.DEFAULT_EPSILON*2, self.player.epsilon)
 
     def test_set_params_sets_default_draw_rewards_if_not_specified(self):
+        self.player.draw_rewards[Board.X] = TDLearningPlayer.DEFAULT_X_DRAW_REWARD-0.1
+        self.player.draw_rewards[Board.O] = TDLearningPlayer.DEFAULT_O_DRAW_REWARD+0.1
         self.player.set_params()
         self.assertAlmostEqual(TDLearningPlayer.DEFAULT_X_DRAW_REWARD, self.player.draw_rewards[Board.X])
         self.assertAlmostEqual(TDLearningPlayer.DEFAULT_O_DRAW_REWARD, self.player.draw_rewards[Board.O])
@@ -136,6 +156,17 @@ class TestTdLearningPlayer(unittest.TestCase):
             TDLearningPlayer.DEFAULT_X_DRAW_REWARD-0.01, self.player.draw_rewards[Board.X])
         self.assertAlmostEqual(
             TDLearningPlayer.DEFAULT_O_DRAW_REWARD+0.01, self.player.draw_rewards[Board.O])
+
+    def test_get_params(self):
+        params = \
+        {
+            "alpha": self.player.DEFAULT_ALPHA+0.01,
+            "epsilon": TDLearningPlayer.DEFAULT_EPSILON-0.01,
+            "x_draw_reward": TDLearningPlayer.DEFAULT_X_DRAW_REWARD+0.1,
+            "o_draw_reward": TDLearningPlayer.DEFAULT_O_DRAW_REWARD-0.1
+        }
+        self.player.set_params(**params)
+        self.assertEqual(params, self.player.get_params())
 
     def test_store_state_appends_state(self):
         self.assert_stored_states_are(["X--|---|---"], 0, Board.X)

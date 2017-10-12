@@ -22,6 +22,15 @@ class TDLearningPlayer(ComputerPlayer):
         self.draw_rewards = {Board.X: kwargs.get("x_draw_reward", self.DEFAULT_X_DRAW_REWARD),
                              Board.O: kwargs.get("o_draw_reward", self.DEFAULT_O_DRAW_REWARD)}
 
+    def get_params(self):
+        return \
+        {
+            "alpha": self.alpha,
+            "epsilon": self.epsilon,
+            "x_draw_reward": self.draw_rewards[Board.X],
+            "o_draw_reward": self.draw_rewards[Board.O]
+        }
+
     def store_state(self):
         self.states.append(tuple(self.board.state))
         

@@ -27,7 +27,8 @@ class Trainer(object):
         parser.add_argument(
             "-b", "--num-batches", default=1000, type=int, help="number of batches to gather stats")
         parser.add_argument(
-            "-l", "--learning-type", choices=["TD"], default="TD", dest="learning_type", metavar="LEARNING_TYPE",
+            "-l", "--learning-type", choices=self.LEARNERS.keys(), default="TD", dest="learning_type",
+            metavar="LEARNING_TYPE",
             help=textwrap.dedent("""\
 where LEARNING_TYPE is as follows:
 - TD=Temporal Difference Learning"""))
@@ -154,12 +155,17 @@ where LEARNING_TYPE is as follows:
         print("X has trained {} states".format(len(self.player1.values)))
         print("O has trained {} states".format(len(self.player2.values)))
 
+    def save(self):
+        self.player1.save()
+        self.player2.save()
+
 def main(args=sys.argv[1:]):
     plt.interactive(True)
     trainer = Trainer(args)
     stats = trainer.train()
     trainer.plot_stats(stats)
     trainer.show_num_states()
+    trainer.save()
     input("Press ENTER to continue...")
     return 0
 
