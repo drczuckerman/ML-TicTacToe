@@ -61,8 +61,7 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.assert_file_opened_with(filename, "rb", open_mock)
 
     def assert_file_opened_with(self, filename, mode, open_mock):
-        open_mock.assert_called_once_with(
-            os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "data", filename)), mode)
+        open_mock.assert_called_once_with(os.path.abspath(os.path.join(".", "data", filename)), mode)
     
     @patch('pickle.dump')
     @patch('builtins.open', create=True)
@@ -294,16 +293,16 @@ class TestTdLearningPlayer(unittest.TestCase):
 
     def test_load_stores_values_for_x(self):
         values = {"foo": "bar"}
-        self.assert_load_values_are(values, Board.X, "TDLearningX.pkl")
+        self.assert_load_values_are(values, Board.X, "TDLearningPlayerX.pkl")
 
     def test_load_stores_values_for_o(self):
         values = {"bar": "foo"}
-        self.assert_load_values_are(values, Board.O, "TDLearningO.pkl")
+        self.assert_load_values_are(values, Board.O, "TDLearningPlayerO.pkl")
 
     def test_save_stores_values_for_x(self):
         values = {"baz": "quux"}
-        self.assert_save_values_are(values, Board.X, "TDLearningX.pkl")
+        self.assert_save_values_are(values, Board.X, "TDLearningPlayerX.pkl")
 
     def test_save_stores_values_for_o(self):
         values = {"quux": "baz"}
-        self.assert_save_values_are(values, Board.O, "TDLearningO.pkl")
+        self.assert_save_values_are(values, Board.O, "TDLearningPlayerO.pkl")

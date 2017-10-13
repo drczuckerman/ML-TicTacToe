@@ -8,8 +8,6 @@ class TDLearningPlayer(ComputerPlayer):
     DEFAULT_X_DRAW_REWARD = 0.5
     DEFAULT_O_DRAW_REWARD = 0.5
     
-    DATA_FILENAMES = {Board.X: "TDLearningX.pkl", Board.O: "TDLearningO.pkl"}
-    
     def __init__(self):
         super().__init__()
         self.values = {}
@@ -82,7 +80,7 @@ class TDLearningPlayer(ComputerPlayer):
         return random.choice(best_moves)
 
     def load(self):
-        self.values = self._load_file(self.DATA_FILENAMES)
+        self.values = self._load_file()
 
     def save(self):
-        self._save_file(self.DATA_FILENAMES, self.values)
+        self._save_file(self.values)

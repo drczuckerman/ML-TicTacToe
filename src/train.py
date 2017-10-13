@@ -1,6 +1,8 @@
 import sys
 import argparse
 import textwrap
+import pickle
+import utils
 from matplotlib import pyplot as plt
 from td_learning_player import TDLearningPlayer
 from random_player import RandomPlayer
@@ -118,6 +120,10 @@ where LEARNING_TYPE is as follows:
             winner = controller.make_move()
         return winner
 
+    def save_stats(self, stats):
+        with open(utils.get_path("data", self.player1.__class__.__name__ + "Stats.pkl"), "wb") as f:
+            pickle.dump(stats, f)
+
     def plot_stats(self, stats):
         self._plot_figure("Training", stats, "train")
         self._plot_figure("Competing", stats, "compete")
@@ -163,6 +169,7 @@ def main(args=sys.argv[1:]):
     plt.interactive(True)
     trainer = Trainer(args)
     stats = trainer.train()
+    trainer.save_stats(stats)
     trainer.plot_stats(stats)
     trainer.show_num_states()
     trainer.save()

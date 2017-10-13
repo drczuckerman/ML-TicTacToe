@@ -64,5 +64,6 @@ class Board(object):
     def _format_state(self, pos):
         return self.PIECE_DICT.get(self.state[pos], str(pos + 1))
 
-    def format_piece(self, piece):
-        return self.PIECE_DICT[piece]
+    @staticmethod
+    def format_piece(piece):
+        return Board.PIECE_DICT[piece]

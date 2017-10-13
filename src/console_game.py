@@ -17,7 +17,7 @@ class ConsoleGame(object):
         return winner
 
     def _show_turn(self, player):
-        piece = self.controller.board.format_piece(player.piece)
+        piece = Board.format_piece(player.piece)
         print("It's your turn, {}".format(piece))
 
     def _show_board(self):

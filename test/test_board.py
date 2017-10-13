@@ -252,8 +252,8 @@ class TestBoard(unittest.TestCase):
         self.assertEqual("Draw", self.board.get_winner_text(Board.DRAW))
 
     def test_format_piece(self):
-        self.assertEqual("X", self.board.format_piece(Board.X))
-        self.assertEqual("O", self.board.format_piece(Board.O))
+        self.assertEqual("X", Board.format_piece(Board.X))
+        self.assertEqual("O", Board.format_piece(Board.O))
 
     def test_format_board_shows_numbers_for_empty_cells(self):
         self.assert_board_format_is(formatted_pieces="---|---|---")
