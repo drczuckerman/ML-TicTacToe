@@ -4,10 +4,9 @@ import textwrap
 import pickle
 import utils
 import player_types
-from matplotlib import pyplot as plt
+from board import Board
 from td_learning_player import TDLearningPlayer
 from random_player import RandomPlayer
-from board import Board
 from game_controller import GameController
 
 class Trainer(object):
@@ -15,8 +14,8 @@ class Trainer(object):
         parsed_args = self._parse_args(args)
         self.num_games = parsed_args.num_games
         self.num_batches = parsed_args.num_batches
-        self.player1 = self._init_class(parsed_args)
-        self.player2 = self._init_class(parsed_args)
+        self.player1 = self._init_player(parsed_args)
+        self.player2 = self._init_player(parsed_args)
         self.random_player = RandomPlayer()
         
     def _parse_args(self, args):
@@ -38,7 +37,7 @@ class Trainer(object):
         parser.add_argument("-o", "--o-draw", type=float, help="O draw reward")
         return parser.parse_args(args)
 
-    def _init_class(self, parsed_args):
+    def _init_player(self, parsed_args):
         player = player_types.get_learning_player(parsed_args.learning_type)
         params = {key: value for key, value in parsed_args.__dict__.items() if value is not None}
         player.set_params(**params)
@@ -62,6 +61,7 @@ class Trainer(object):
                 self._compete_batch(self.player1, self.random_player, "Compete X vs. Random"))
             stats["compete_o_vs_random"].append(
                 self._compete_batch(self.random_player, self.player2, "Compete O vs. Random"))
+
         return stats
 
     def _show_game_numbers(self, game_number):
@@ -79,6 +79,11 @@ class Trainer(object):
     def _init_stats(self):
         return {Board.X: 0, Board.O: 0, Board.DRAW: 0}
         
+    def _save_stats(self, stats):
+        with open(utils.get_path("data", self.player1.__class__.__name__ + "Stats.pkl"), "wb") as f:
+            params = {"num_games": self.num_games, "num_batches": self.num_batches}
+            pickle.dump({"params": params, "stats": stats}, f)
+
     def _show_stats(self, stat_type, stats):
         print("- {}: X wins={}, O wins={}, Draw={}".format(
             stat_type, stats[Board.X], stats[Board.O], stats[Board.DRAW]))
@@ -118,60 +123,20 @@ class Trainer(object):
             winner = controller.make_move()
         return winner
 
-    def save_stats(self, stats):
-        with open(utils.get_path("data", self.player1.__class__.__name__ + "Stats.pkl"), "wb") as f:
-            pickle.dump(stats, f)
+    def save(self, stats):
+        self.player1.save()
+        self.player2.save()
+        self._save_stats(stats)
 
-    def plot_stats(self, stats):
-        self._plot_figure("Training", stats, "train")
-        self._plot_figure("Competing", stats, "compete")
-        
-    def _plot_figure(self, title, stats, key_prefix):
-        f, ax = plt.subplots(3, 1)
-        ax[0].set_title("{} - {} game trials".format(title, self.num_batches))
-        self._plot_stats_subplot(
-            ax[0], "Self", stats[key_prefix+ "_self"], [Board.O, Board.X], True)
-        self._plot_stats_subplot(
-            ax[1], "X vs Random", stats[key_prefix + "_x_vs_random"], [Board.O], False)
-        self._plot_stats_subplot(
-            ax[2], "O vs Random", stats[key_prefix + "_o_vs_random"], [Board.X], False)
-        plt.xlabel("Game #")
-        f.subplots_adjust(hspace=0.35)
-        plt.show()
-    
-    def _plot_stats_subplot(self, ax, ylabel, stats, keys, show_legend):
-        x = list(range(self.num_batches, self.num_games + self.num_batches, self.num_batches))
-        colors = {Board.O: "r", Board.X: "g"}
-        markers = {Board.O: "x", Board.X: "o"}
-        for key in keys:
-            y = [stat[key] for stat in stats]
-            ax.plot(x, y, c=colors[key], marker=markers[key], markersize=5)
-            
-        ax.set_ylabel(ylabel)
-        ax.grid()
-
-        box = ax.get_position()
-        ax.set_position([box.x0, box.y0, box.width*0.9, box.height])
-        if show_legend:
-            ax.legend(["X Losses", "O Losses"], loc="center left", bbox_to_anchor=(1,0.5))
-            
     def show_num_states(self):
         print("X has trained {} states".format(len(self.player1.values)))
         print("O has trained {} states".format(len(self.player2.values)))
 
-    def save(self):
-        self.player1.save()
-        self.player2.save()
-
 def main(args=sys.argv[1:]):
-    plt.interactive(True)
     trainer = Trainer(args)
     stats = trainer.train()
-    trainer.save_stats(stats)
-    trainer.plot_stats(stats)
+    trainer.save(stats)
     trainer.show_num_states()
-    trainer.save()
-    input("Press ENTER to continue...")
     return 0
 
 if __name__ == "__main__":

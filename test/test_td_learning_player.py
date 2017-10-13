@@ -49,10 +49,11 @@ class TestTdLearningPlayer(unittest.TestCase):
         
     @patch('builtins.open', create=True)
     def assert_load_values_are(self, values, piece, filename, open_mock):
-        self.player.set_piece(piece)
+        self.player.piece = None
         params = {"alpha": 0.2, "epsilon": 0.3, "x_draw_reward": 0.45, "o_draw_reward": 0.55}
         open_mock.return_value = BytesIO(pickle.dumps({"learned": values, "params": params}))
-        self.player.load()
+        self.player.load(piece)
+        self.assertEqual(piece, self.player.piece)
         self.assertEqual(values, self.player.values)
         self.assertAlmostEqual(0.2, self.player.alpha)
         self.assertAlmostEqual(0.3, self.player.epsilon)

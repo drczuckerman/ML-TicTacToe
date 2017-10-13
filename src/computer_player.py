@@ -31,7 +31,8 @@ class ComputerPlayer(Player):
     def load(self):
         pass
 
-    def _load_file(self):
+    def _load_file(self, piece):
+        self.set_piece(piece)
         with open(self._get_filename(), "rb") as f:
             contents = pickle.load(f)
             self.set_params(**contents["params"])

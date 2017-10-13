@@ -79,8 +79,8 @@ class TDLearningPlayer(ComputerPlayer):
                 best_moves.append(position)
         return random.choice(best_moves)
 
-    def load(self):
-        self.values = self._load_file()
+    def load(self, piece):
+        self.values = self._load_file(piece)
 
     def save(self):
         self._save_file(self.values)
