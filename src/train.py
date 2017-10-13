@@ -3,6 +3,7 @@ import argparse
 import textwrap
 import pickle
 import utils
+import player_types
 from matplotlib import pyplot as plt
 from td_learning_player import TDLearningPlayer
 from random_player import RandomPlayer
@@ -10,8 +11,6 @@ from board import Board
 from game_controller import GameController
 
 class Trainer(object):
-    LEARNERS = {"TD": TDLearningPlayer}
-    
     def __init__(self, args):
         parsed_args = self._parse_args(args)
         self.num_games = parsed_args.num_games
@@ -22,18 +21,17 @@ class Trainer(object):
         
     def _parse_args(self, args):
         parser = argparse.ArgumentParser(
-            description="Train ML Tic-Tac-Toe Players",
-            formatter_class=argparse.RawTextHelpFormatter)
+            description="Train Machine Learning Tic-Tac-Toe Players",
+            formatter_class=argparse.RawTextHelpFormatter,
+            epilog=textwrap.dedent("where LEARNING_TYPE is as follows:\n" +
+                                   "\n".join(player_types.get_learning_player_descriptions())))
         parser.add_argument(
             "-g", "--num-games", default=20000, type=int, help="number of games to play")
         parser.add_argument(
             "-b", "--num-batches", default=1000, type=int, help="number of batches to gather stats")
         parser.add_argument(
-            "-l", "--learning-type", choices=self.LEARNERS.keys(), default="TD", dest="learning_type",
-            metavar="LEARNING_TYPE",
-            help=textwrap.dedent("""\
-where LEARNING_TYPE is as follows:
-- TD=Temporal Difference Learning"""))
+            "-l", "--learning-type", choices=player_types.get_learning_player_types(),
+            default="TD", dest="learning_type", metavar="LEARNING_TYPE")
         parser.add_argument("-a", "--alpha", type=float, help="learning rate")
         parser.add_argument("-e", "--epsilon", type=float, help="exploration rate")
         parser.add_argument("-x", "--x-draw-reward", type=float, help="X draw reward")
@@ -41,7 +39,7 @@ where LEARNING_TYPE is as follows:
         return parser.parse_args(args)
 
     def _init_class(self, parsed_args):
-        player = self.LEARNERS[parsed_args.learning_type]()
+        player = player_types.get_learning_player(parsed_args.learning_type)
         params = {key: value for key, value in parsed_args.__dict__.items() if value is not None}
         player.set_params(**params)
         return player
