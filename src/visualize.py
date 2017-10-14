@@ -49,38 +49,38 @@ class Visualizer(object):
         self._plot_stats_figure("Competing", stats, "compete")
         
     def _plot_stats_figure(self, title, stats, key_prefix):
-        f, ax = plt.subplots(3, 1)
-        ax[0].set_title("{} - {} game trials".format(title, self.num_batches))
+        f, ax = plt.subplots(3, 1, sharex=True)
+        plt.suptitle("{} - {} game trials".format(title, self.num_batches))
+        lines = self._plot_stats_subplot(
+            ax[0], "Self", stats[key_prefix+ "_self"], [Board.O, Board.X])
         self._plot_stats_subplot(
-            ax[0], "Self", stats[key_prefix+ "_self"], [Board.O, Board.X], True)
+            ax[1], "X vs Random", stats[key_prefix + "_x_vs_random"], [Board.O])
         self._plot_stats_subplot(
-            ax[1], "X vs Random", stats[key_prefix + "_x_vs_random"], [Board.O], False)
-        self._plot_stats_subplot(
-            ax[2], "O vs Random", stats[key_prefix + "_o_vs_random"], [Board.X], False)
+            ax[2], "O vs Random", stats[key_prefix + "_o_vs_random"], [Board.X])
         plt.xlabel("Game #")
-        f.subplots_adjust(hspace=0.35)
+        f.subplots_adjust(hspace=0.1)
+        f.legend(lines, ["X Losses", "O Losses"], "upper right")
         plt.show()
     
-    def _plot_stats_subplot(self, ax, ylabel, stats, keys, show_legend):
+    def _plot_stats_subplot(self, ax, ylabel, stats, keys):
         x = list(range(self.num_batches, self.num_games + self.num_batches, self.num_batches))
         colors = {Board.O: "r", Board.X: "g"}
         markers = {Board.O: "x", Board.X: "o"}
         lines = []
         for key in keys:
             y = [stat[key] for stat in stats]
-            ax.plot(x, y, c=colors[key], marker=markers[key], markersize=5)
+            lines += ax.plot(x, y, c=colors[key], marker=markers[key], markersize=5)
             
         ax.set_ylabel(ylabel)
         ax.grid()
-
-        if show_legend:
-            ax.legend(["X Losses", "O Losses"])
+        return lines
 
     def _plot_ideal_moves(self):
         game_controller = GameController(self.player1, self.player2)
         color_dict = {"X": "red", "O": "green"}
         f, ax = plt.subplots(3, 3)
         f.suptitle("Best moves")
+        f.subplots_adjust(hspace=0.25, wspace=-0.25, bottom=0.0)
         for move in range(9):
             row = move // 3
             col = move % 3
@@ -98,9 +98,9 @@ class Visualizer(object):
                 with game_controller.board.try_move(k, player.piece) as (winner, state):
                     values.append(player._get_value(state, winner))
 
-            sns.heatmap(np.array(values).reshape((3, 3)), annot=True, linewidths=.5, linecolor="k",
-                        square=True, vmin=0.0, vmax=1.0, xticklabels=False, yticklabels=False, cmap="RdBu_r",
-                        mask=np.array(mask).reshape((3, 3)), ax=ax[row][col])
+            sns.heatmap(np.array(values).reshape((3, 3)), annot=True, linewidths=1.0, linecolor="k",
+                        square=True, vmin=0.0, vmax=1.0, xticklabels=False, yticklabels=False, cbar=False,
+                        cmap="RdBu_r", mask=np.array(mask).reshape((3, 3)), ax=ax[row][col])
             ax[row][col].set_title(Board.format_piece(player.piece) + "'s Turn")
 
             for k, piece in enumerate(pieces):
