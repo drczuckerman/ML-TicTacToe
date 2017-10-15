@@ -34,5 +34,5 @@ def get_player_descriptions():
     return sorted(_get_player_descriptions(LEARNERS) + _get_player_descriptions(NON_LEARNERS))
 
 def _get_player_descriptions(player_type_dict):
-    return ["- {}: {}".format(key, value["description"]) for key, value in player_type_dict.items()]
+    return [value["description"] for value in player_type_dict.values()]
 

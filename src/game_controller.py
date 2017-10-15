@@ -1,4 +1,5 @@
 from board import Board
+from learning_computer_player import LearningComputerPlayer, run_if_learner
 
 class GameController(object):
     def __init__(self, x_player, o_player):
@@ -6,7 +7,7 @@ class GameController(object):
         self.board = Board()
         self.player_number = 0
         for player, piece in zip(self.players, [Board.X, Board.O]):
-            player.reset()
+            run_if_learner(player, lambda: player.reset())
             player.set_board(self.board)
             player.set_piece(piece)
             

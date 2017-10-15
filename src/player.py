@@ -13,6 +13,3 @@ class Player(object):
         
     def set_piece(self, piece):
         self.piece = piece
-
-    def reset(self):
-        pass

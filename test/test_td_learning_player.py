@@ -6,7 +6,7 @@ from mock import patch
 from io import BytesIO
 from td_learning_player import TDLearningPlayer
 from board import Board
-from board_test_utils import get_board_state_tuple, set_board
+from board_test_utils import get_board_state_tuple, set_board, assert_get_move_is, assert_get_move_values_are
 from mock_random import MockRandom
 
 class TestTdLearningPlayer(unittest.TestCase):
@@ -42,11 +42,6 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.player.set_reward(winner)
         self.assertEqual(values_dict, self.player.values)
 
-    def assert_get_move_is(self, position, piece, pieces=""):
-        self.player.set_piece(piece)
-        set_board(self.board, pieces)
-        self.assertEqual(position, self.player.get_move())
-        
     @patch('builtins.open', create=True)
     def assert_load_values_are(self, values, piece, filename, open_mock):
         self.player.piece = None
@@ -256,7 +251,7 @@ class TestTdLearningPlayer(unittest.TestCase):
             self, random_mock, choice_mock):
         random_mock.return_value = 0.099
         choice_mock.side_effect = MockRandom(4).choice
-        self.assert_get_move_is(6, Board.X, "X--|-O-|---")
+        assert_get_move_is(self, self.player, self.board, 6, Board.X, "X--|-O-|---")
         choice_mock.assert_called_once_with([1, 2, 3, 5, 6, 7, 8])
 
     @patch('td_learning_player.random.choice')
@@ -266,7 +261,7 @@ class TestTdLearningPlayer(unittest.TestCase):
         random_mock.return_value = 0.1
         choice_mock.side_effect = MockRandom(0).choice
         self.player.values[get_board_state_tuple("---|-XO|---")] = 0.501
-        self.assert_get_move_is(5, Board.O, "---|-X-|---")
+        assert_get_move_is(self, self.player, self.board, 5, Board.O, "---|-X-|---")
         choice_mock.assert_called_once_with([5])
 
     @patch('td_learning_player.random.choice')
@@ -278,7 +273,7 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.player.values[get_board_state_tuple("X--|-XO|---")] = 0.501
         self.player.values[get_board_state_tuple("--X|-XO|---")] = 0.501
         self.player.values[get_board_state_tuple("---|-XO|X--")] = 0.501
-        self.assert_get_move_is(2, Board.X, "---|-XO|---")
+        assert_get_move_is(self, self.player, self.board, 2, Board.X, "---|-XO|---")
         choice_mock.assert_called_once_with([0, 2, 6])
 
     @patch('td_learning_player.random.choice')
@@ -288,10 +283,21 @@ class TestTdLearningPlayer(unittest.TestCase):
         random_mock.return_value = 0.099
         choice_mock.side_effect = MockRandom(0).choice
         self.player.values[get_board_state_tuple("---|-O-|--X")] = 0.501
-        self.assert_get_move_is(4, Board.O, "---|---|--X")
+        assert_get_move_is(self, self.player, self.board, 4, Board.O, "---|---|--X")
         random_mock.assert_not_called()
         choice_mock.assert_called_once_with([4])
 
+    def test_get_move_values_returns_move_values_for_available_moves(self):
+        self.player.values[get_board_state_tuple("XOO|---|-X-")] = 0.7
+        self.player.values[get_board_state_tuple("XO-|O--|-X-")] = 0.65
+        self.player.values[get_board_state_tuple("XO-|-O-|-X-")] = 0.75
+        self.player.values[get_board_state_tuple("XO-|--O|-X-")] = 0.62
+        self.player.values[get_board_state_tuple("XO-|---|OX-")] = 0.72
+        self.player.values[get_board_state_tuple("XO-|---|-XO")] = 0.67
+        assert_get_move_values_are(
+            self, self.player, self.board, {2: 0.7, 3: 0.65, 4: 0.75, 5: 0.62, 6: 0.72, 8: 0.67},
+            Board.O, "XO-|---|-X-")
+        
     def test_load_stores_values_for_x(self):
         values = {"foo": "bar"}
         self.assert_load_values_are(values, Board.X, "TDLearningPlayerX.pkl")

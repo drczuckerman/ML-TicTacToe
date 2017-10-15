@@ -55,3 +55,11 @@ def assert_get_move_is(cls, player, board, position, piece, pieces=""):
     player.set_piece(piece)
     set_board(board, pieces)
     cls.assertEqual(position, player.get_move())
+
+def assert_get_move_values_are(cls, player, board, values, piece, pieces=""):
+    player.set_piece(piece)
+    set_board(board, pieces)
+    move_values = player.get_move_values()
+    cls.assertEqual(list(values.keys()), list(move_values.keys()))
+    for value, move_value in zip(values.values(), move_values.values()):
+        cls.assertAlmostEqual(value, move_value)

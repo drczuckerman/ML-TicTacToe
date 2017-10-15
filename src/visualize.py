@@ -17,11 +17,14 @@ class Visualizer(object):
         self.player2 = self._init_player(parsed_args, Board.O)
 
     def _parse_args(self, args):
+        epilog = "\n".join(
+            "- {}: {}".format(type, description)
+            for type, description in zip(player_types.get_learning_player_types(), 
+                                         player_types.get_learning_player_descriptions()))
         parser = argparse.ArgumentParser(
             description="Visualize Machine Learning Tic-Tac-Toe Training",
             formatter_class=argparse.RawTextHelpFormatter,
-            epilog=textwrap.dedent("where LEARNING_TYPE is as follows:\n" +
-                                   "\n".join(player_types.get_learning_player_descriptions())))
+            epilog=textwrap.dedent("where LEARNING_TYPE is as follows:\n" + epilog))
         parser.add_argument(
             "-l", "--learning-type", choices=player_types.get_learning_player_types(),
             default="TD", dest="learning_type", metavar="LEARNING_TYPE")
@@ -35,7 +38,7 @@ class Visualizer(object):
     def visualize(self):
         stats = self._load_stats()
         self._plot_stats(stats)
-        self._plot_ideal_moves()
+        self._plot_best_moves()
 
     def _load_stats(self):
         with open(utils.get_path("data", self.player1.__class__.__name__ + "Stats.pkl"), "rb") as f:
@@ -64,7 +67,7 @@ class Visualizer(object):
     
     def _plot_stats_subplot(self, ax, ylabel, stats, keys):
         x = list(range(self.num_batches, self.num_games + self.num_batches, self.num_batches))
-        colors = {Board.O: "r", Board.X: "g"}
+        colors = {Board.O: "r", Board.X: "b"}
         markers = {Board.O: "x", Board.X: "o"}
         lines = []
         for key in keys:
@@ -75,43 +78,44 @@ class Visualizer(object):
         ax.grid()
         return lines
 
-    def _plot_ideal_moves(self):
+    def _plot_best_moves(self):
         game_controller = GameController(self.player1, self.player2)
-        color_dict = {"X": "red", "O": "green"}
         f, ax = plt.subplots(3, 3)
         f.suptitle("Best moves")
         f.subplots_adjust(hspace=0.25, wspace=-0.25, bottom=0.0)
-        for move in range(9):
-            row = move // 3
-            col = move % 3
-            values = []
-            mask = [False]*9
-            pieces = [" "]*9
-            player = game_controller.get_player()
-            for k in range(9):
-                piece = game_controller.board.state[k]
-                if piece != Board.EMPTY:
-                    values.append(0)
-                    mask[k] = True
-                    pieces[k] = Board.format_piece(piece)
-                    continue
-                with game_controller.board.try_move(k, player.piece) as (winner, state):
-                    values.append(player._get_value(state, winner))
+        winner = None
+        move_number = 0
+        while winner is None:
+            row = move_number // 3
+            col = move_number % 3
+            self._plot_best_move(ax[row][col], game_controller)
+            winner = game_controller.make_move()
+            move_number += 1
 
-            sns.heatmap(np.array(values).reshape((3, 3)), annot=True, linewidths=1.0, linecolor="k",
-                        square=True, vmin=0.0, vmax=1.0, xticklabels=False, yticklabels=False, cbar=False,
-                        cmap="RdBu_r", mask=np.array(mask).reshape((3, 3)), ax=ax[row][col])
-            ax[row][col].set_title(Board.format_piece(player.piece) + "'s Turn")
+    def _plot_best_move(self, ax, game_controller):
+        self._plot_move_values(ax, game_controller)
+        self._plot_pieces(ax, game_controller)
 
-            for k, piece in enumerate(pieces):
-                x = k % 3
-                y = k // 3
-                if piece != " ":
-                     font = {"color": color_dict[piece], "size": 16}
-                     ax[row][col].text(x+0.5, y+0.5, pieces[k], fontdict=font, 
-                                       ha="center", va="center")
+    def _plot_move_values(self, ax, game_controller):
+        cmaps = {Board.X: "RdBu_r", Board.O: "RdBu"}
+        player = game_controller.get_player()
+        move_values = player.get_move_values()
+        positions = range(len(game_controller.board.state))
+        values = [move_values.get(position, 0.0) for position in positions]
+        masks = [position not in move_values for position in positions]
+        sns.heatmap(np.array(values).reshape((3, 3)), annot=True, linewidths=1.0, linecolor="k",
+                    square=True, vmin=0.0, vmax=1.0, xticklabels=False, yticklabels=False, cbar=False,
+                    cmap=cmaps[player.piece], mask=np.array(masks).reshape((3, 3)), ax=ax)
+        ax.set_title(Board.format_piece(player.piece) + "'s Turn")
 
-            game_controller.make_move()
+    def _plot_pieces(self, ax, game_controller):
+        colors = {Board.X: "red", Board.O: "blue"}
+        for position, piece in enumerate(game_controller.board.state):
+            x = position % 3
+            y = position // 3
+            if piece != Board.EMPTY:
+                 font = {"color": colors[piece], "size": 16}
+                 ax.text(x+0.5, y+0.5, Board.format_piece(piece), fontdict=font, ha="center", va="center")
 
 def main(args=sys.argv[1:]):
     plt.interactive(True)

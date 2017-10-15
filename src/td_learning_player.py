@@ -1,8 +1,8 @@
 import random
-from computer_player import ComputerPlayer
+from learning_computer_player import LearningComputerPlayer
 from board import Board
 
-class TDLearningPlayer(ComputerPlayer):
+class TDLearningPlayer(LearningComputerPlayer):
     DEFAULT_ALPHA = 0.1
     DEFAULT_EPSILON = 0.1
     DEFAULT_X_DRAW_REWARD = 0.5
@@ -69,15 +69,21 @@ class TDLearningPlayer(ComputerPlayer):
     def _choose_best_move(self):
         max_value = -1
         best_moves = []
-        for position in self.board.get_available_moves():
-            with self.board.try_move(position, self.piece) as (winner, state):
-                value = self._get_value(state, winner)
+        for position, value in self.get_move_values().items():
             if value > max_value:
                 max_value = value
                 best_moves = [position]
             elif value == max_value:
                 best_moves.append(position)
         return random.choice(best_moves)
+
+    def get_move_values(self):
+        move_values = {}
+        for position in self.board.get_available_moves():
+            with self.board.try_move(position, self.piece) as (winner, state):
+                move_values[position] = self._get_value(state, winner)
+
+        return move_values
 
     def load(self, piece):
         self.values = self._load_file(piece)

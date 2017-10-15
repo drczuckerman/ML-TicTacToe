@@ -1,28 +1,40 @@
 import unittest
+from mock import patch
 from game_controller import GameController
 from board import Board
 from player import Player
+from learning_computer_player import LearningComputerPlayer
 from board_test_utils import assert_board_is, set_board
 
 class MockPlayer(Player):
     def __init__(self):
+        super().__init__()
         self.index = 0
         self.positions = []
-        
+
     def set_moves(self, positions):
         self.positions = positions
-        
+ 
     def get_move(self):
         position = self.positions[self.index]
         self.index += 1
         return position
+
+class MockLearningComputerPlayer(LearningComputerPlayer):
+    def __init__(self):
+        super().__init__()
+        self.reset_called = False
+
+    def reset(self):
+        super().reset()
+        self.reset_called = True
 
 class TestGameController(unittest.TestCase):
     def setUp(self):
         self.player1 = MockPlayer()
         self.player2 = MockPlayer()
         self.controller = GameController(self.player1, self.player2)
-        
+
     def assert_player_is(self, player_number, player):
         self.controller.player_number = player_number
         self.assertEqual(player, self.controller.get_player())
@@ -30,7 +42,7 @@ class TestGameController(unittest.TestCase):
     def assert_make_moves_winner_is(self, winner, positions):
         self.player1.set_moves(positions[0::2])
         self.player2.set_moves(positions[1::2])
-        
+
         for _ in positions[:-1]:
             self.assertIsNone(self.controller.make_move())
         self.assertEqual(winner, self.controller.make_move())
@@ -51,7 +63,14 @@ class TestGameController(unittest.TestCase):
     def test_constructor_stores_pieces_for_each_player(self):
         self.assertEqual(Board.X, self.player1.piece)
         self.assertEqual(Board.O, self.player2.piece)
-        
+
+    def test_constructor_resets_learning_player(self):
+        player1 = MockLearningComputerPlayer()
+        player2 = MockLearningComputerPlayer()
+        controller = GameController(player1, player2)
+        self.assertTrue(player1.reset_called)
+        self.assertTrue(player2.reset_called)
+
     def test_get_player(self):
         self.assert_player_is(0, self.player1)
         self.assert_player_is(1, self.player2)

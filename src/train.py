@@ -5,6 +5,7 @@ import pickle
 import utils
 import player_types
 from board import Board
+from learning_computer_player import run_if_learner
 from td_learning_player import TDLearningPlayer
 from random_player import RandomPlayer
 from game_controller import GameController
@@ -19,11 +20,14 @@ class Trainer(object):
         self.random_player = RandomPlayer()
         
     def _parse_args(self, args):
+        epilog = "\n".join(
+            "- {}: {}".format(type, description)
+            for type, description in zip(player_types.get_learning_player_types(), 
+                                         player_types.get_learning_player_descriptions()))
         parser = argparse.ArgumentParser(
             description="Train Machine Learning Tic-Tac-Toe Players",
             formatter_class=argparse.RawTextHelpFormatter,
-            epilog=textwrap.dedent("where LEARNING_TYPE is as follows:\n" +
-                                   "\n".join(player_types.get_learning_player_descriptions())))
+            epilog=textwrap.dedent("where LEARNING_TYPE is as follows:\n" + epilog))
         parser.add_argument(
             "-g", "--num-games", default=20000, type=int, help="number of games to play")
         parser.add_argument(
@@ -94,24 +98,24 @@ class Trainer(object):
         winner = None
         while winner is None:
             winner = controller.make_move()
-            player1.store_state()
-            player2.store_state()
+            run_if_learner(player1, lambda: player1.store_state())
+            run_if_learner(player2, lambda: player2.store_state())
             
-        player1.set_reward(winner)
-        player2.set_reward(winner)
+        run_if_learner(player1, lambda: player1.set_reward(winner))
+        run_if_learner(player2, lambda: player2.set_reward(winner))
         return winner
 
     def _compete_batch(self, player1, player2, stat_type):
-        player1.disable_learning()
-        player2.disable_learning()
+        run_if_learner(player1, lambda: player1.disable_learning())
+        run_if_learner(player2, lambda: player2.disable_learning())
 
         stats = self._init_stats()
         for batch_number in range(self.num_batches):
             winner = self._compete_game(player1, player2)
             stats[winner] += 1
 
-        self.player1.enable_learning()
-        self.player2.enable_learning()
+        run_if_learner(self.player1, lambda: self.player1.enable_learning())
+        run_if_learner(self.player2, lambda: self.player2.enable_learning())
 
         self._show_stats(stat_type, stats)
         return stats

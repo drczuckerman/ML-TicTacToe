@@ -33,13 +33,13 @@ class TestPlayerTypes(unittest.TestCase):
 
     def test_get_learning_player_descriptions(self):
         self.assertEqual(
-            ["- TD: Temporary Difference Learning Player"], player_types.get_learning_player_descriptions())
+            ["Temporary Difference Learning Player"], player_types.get_learning_player_descriptions())
 
     def test_get_player_descriptions(self):
         self.assertEqual(
             [
-                "- Human: Human Player",
-                "- Random: Random Player",
-                "- TD: Temporary Difference Learning Player",
+                "Human Player",
+                "Random Player",
+                "Temporary Difference Learning Player",
             ], player_types.get_player_descriptions())
 
