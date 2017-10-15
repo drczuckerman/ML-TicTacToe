@@ -24,7 +24,8 @@ class Visualizer(object):
         parser = argparse.ArgumentParser(
             description="Visualize Machine Learning Tic-Tac-Toe Training",
             formatter_class=argparse.RawTextHelpFormatter,
-            epilog=textwrap.dedent("where LEARNING_TYPE is as follows:\n" + epilog))
+            epilog=textwrap.dedent("where LEARNING_TYPE is as follows:\n" +
+                                   player_types.get_learning_player_command_line_args()))
         parser.add_argument(
             "-l", "--learning-type", choices=player_types.get_learning_player_types(),
             default="TD", dest="learning_type", metavar="LEARNING_TYPE")

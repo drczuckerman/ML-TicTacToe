@@ -20,14 +20,11 @@ class Trainer(object):
         self.random_player = RandomPlayer()
         
     def _parse_args(self, args):
-        epilog = "\n".join(
-            "- {}: {}".format(type, description)
-            for type, description in zip(player_types.get_learning_player_types(), 
-                                         player_types.get_learning_player_descriptions()))
         parser = argparse.ArgumentParser(
             description="Train Machine Learning Tic-Tac-Toe Players",
             formatter_class=argparse.RawTextHelpFormatter,
-            epilog=textwrap.dedent("where LEARNING_TYPE is as follows:\n" + epilog))
+            epilog=textwrap.dedent("where LEARNING_TYPE is as follows:\n" +
+                                   player_types.get_learning_player_command_line_args()))
         parser.add_argument(
             "-g", "--num-games", default=20000, type=int, help="number of games to play")
         parser.add_argument(

@@ -4,7 +4,7 @@ from human_player import HumanPlayer
 
 LEARNERS = \
 {
-    "TD": {"class": TDLearningPlayer, "description": "Temporary Difference Learning Player"}
+    "TD": {"class": TDLearningPlayer, "description": "Temporal Difference Learning Player"}
 }
 NON_LEARNERS = \
 {
@@ -36,3 +36,7 @@ def get_player_descriptions():
 def _get_player_descriptions(player_type_dict):
     return [value["description"] for value in player_type_dict.values()]
 
+def get_learning_player_command_line_args():
+    return "\n".join(
+        "- {}: {}".format(type, description)
+        for type, description in zip(get_learning_player_types(), get_learning_player_descriptions()))
