@@ -19,4 +19,4 @@ class GameController(object):
         position = player.get_move()
         self.board.make_move(position, player.piece)
         self.player_number = 1 - self.player_number
-        return self.board.get_winner()
+        return self.board.get_winner(), position

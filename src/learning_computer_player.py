@@ -1,10 +1,10 @@
 import pickle
 import os
 import utils
-from player import Player
+from computer_player import ComputerPlayer
 from board import Board
 
-class LearningComputerPlayer(Player):
+class LearningComputerPlayer(ComputerPlayer):
     def __init__(self):
         super().__init__()
         self.set_params()

@@ -32,3 +32,6 @@ class TestRandomPlayer(unittest.TestCase):
     def test_get_move_returns_random_available_move(self, choice_mock):
         choice_mock.side_effect = MockRandom(5).choice
         assert_get_move_is(self, self.player, self.board, 7, Board.X, "---|-XO|---")
+
+    def test_indicate_move(self):
+        self.assertEqual("My move is 4", self.player.indicate_move(3))

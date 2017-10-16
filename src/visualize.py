@@ -90,7 +90,7 @@ class Visualizer(object):
             row = move_number // 3
             col = move_number % 3
             self._plot_best_move(ax[row][col], game_controller)
-            winner = game_controller.make_move()
+            winner, _ = game_controller.make_move()
             move_number += 1
 
     def _plot_best_move(self, ax, game_controller):

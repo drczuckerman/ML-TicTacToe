@@ -313,3 +313,6 @@ class TestTdLearningPlayer(unittest.TestCase):
     def test_save_stores_values_for_o(self):
         values = {"quux": "baz"}
         self.assert_save_values_are(values, Board.O, "TDLearningPlayerO.pkl")
+
+    def test_indicate_move(self):
+        self.assertEqual("My move is 8", self.player.indicate_move(7))

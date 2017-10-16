@@ -43,9 +43,9 @@ class TestGameController(unittest.TestCase):
         self.player1.set_moves(positions[0::2])
         self.player2.set_moves(positions[1::2])
 
-        for _ in positions[:-1]:
-            self.assertIsNone(self.controller.make_move())
-        self.assertEqual(winner, self.controller.make_move())
+        for position in positions[:-1]:
+            self.assertEqual((None, position), self.controller.make_move())
+        self.assertEqual((winner, positions[-1]), self.controller.make_move())
 
     def test_constructor_stores_players(self):
         self.assertEqual([self.player1, self.player2], self.controller.players)
@@ -77,7 +77,7 @@ class TestGameController(unittest.TestCase):
         
     def test_make_move_sets_board_and_changes_player_number_when_valid_move(self):
         self.player1.set_moves([4])
-        self.assertIsNone(self.controller.make_move())
+        self.assertEqual((None, 4), self.controller.make_move())
         assert_board_is(self, self.controller.board, "---|-X-|---")
         self.assertEqual(1, self.controller.player_number)
 

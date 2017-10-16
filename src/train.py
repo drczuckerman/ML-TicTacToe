@@ -94,7 +94,7 @@ class Trainer(object):
         controller = GameController(player1, player2)
         winner = None
         while winner is None:
-            winner = controller.make_move()
+            winner, _ = controller.make_move()
             run_if_learner(player1, lambda: player1.store_state())
             run_if_learner(player2, lambda: player2.store_state())
             
@@ -121,7 +121,7 @@ class Trainer(object):
         controller = GameController(player1, player2)
         winner = None
         while winner is None:
-            winner = controller.make_move()
+            winner, _ = controller.make_move()
         return winner
 
     def save(self, stats):
