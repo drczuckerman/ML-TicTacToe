@@ -69,6 +69,9 @@ class Trainer(object):
         print("Game #{}-{}:".format(game_number+1, game_number+self.num_batches))
 
     def _train_batch(self, player1, player2, stat_type):
+        run_if_learner(self.player1, lambda: self.player1.enable_learning())
+        run_if_learner(self.player2, lambda: self.player2.enable_learning())
+
         stats = self._init_stats()
         for batch_number in range(self.num_batches):
             winner = self._train_game(player1, player2)
@@ -80,16 +83,6 @@ class Trainer(object):
     def _init_stats(self):
         return {Board.X: 0, Board.O: 0, Board.DRAW: 0}
         
-    def _save_stats(self, stats):
-        with open(utils.get_path("data", self.player1.__class__.__name__ + "Stats.pkl"), "wb") as f:
-            params = {"num_games": self.num_games, "num_batches": self.num_batches}
-            pickle.dump({"params": params, "stats": stats}, f)
-
-    def _show_stats(self, stat_type, stats):
-        print("- {}: X wins={}, O wins={}, Draw={}".format(
-            stat_type, stats[Board.X], stats[Board.O], stats[Board.DRAW]))
-        return stats
-
     def _train_game(self, player1, player2):
         controller = GameController(player1, player2)
         winner = None
@@ -102,6 +95,16 @@ class Trainer(object):
         run_if_learner(player2, lambda: player2.set_reward(winner))
         return winner
 
+    def _save_stats(self, stats):
+        with open(utils.get_path("data", self.player1.__class__.__name__ + "Stats.pkl"), "wb") as f:
+            params = {"num_games": self.num_games, "num_batches": self.num_batches}
+            pickle.dump({"params": params, "stats": stats}, f)
+
+    def _show_stats(self, stat_type, stats):
+        print("- {}: X wins={}, O wins={}, Draw={}".format(
+            stat_type, stats[Board.X], stats[Board.O], stats[Board.DRAW]))
+        return stats
+
     def _compete_batch(self, player1, player2, stat_type):
         run_if_learner(player1, lambda: player1.disable_learning())
         run_if_learner(player2, lambda: player2.disable_learning())
@@ -110,9 +113,6 @@ class Trainer(object):
         for batch_number in range(self.num_batches):
             winner = self._compete_game(player1, player2)
             stats[winner] += 1
-
-        run_if_learner(self.player1, lambda: self.player1.enable_learning())
-        run_if_learner(self.player2, lambda: self.player2.enable_learning())
 
         self._show_stats(stat_type, stats)
         return stats
