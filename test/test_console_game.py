@@ -139,3 +139,30 @@ class TestConsoleGame(unittest.TestCase):
                                    "x--|x-o|--o",
                                    "X--|X-o|X-o"],
             result=Board.X)
+
+    def test_play_one_random_game_stops_when_o_wins(self):
+        self.assert_play_one_random_game_outputs(
+            moves=[4, 8, 1, 7, 2, 6],
+            formatted_pieces_list=["---|---|---",
+                                   "---|-x-|---",
+                                   "---|-x-|--o",
+                                   "-x-|-x-|--o",
+                                   "-x-|-x-|-oo",
+                                   "-xx|-x-|-oo",
+                                   "-xx|-x-|OOO"],
+            result=Board.O)
+
+    def test_play_one_random_game_stops_when_draw(self):
+        self.assert_play_one_random_game_outputs(
+            moves=[6, 7, 8, 4, 3, 5, 1, 0, 2],
+            formatted_pieces_list=["---|---|---",
+                                   "---|---|x--",
+                                   "---|---|xo-",
+                                   "---|---|xox",
+                                   "---|-o-|xox",
+                                   "---|xo-|xox",
+                                   "---|xoo|xox",
+                                   "-x-|xoo|xox",
+                                   "ox-|xoo|xox",
+                                   "oxx|xoo|xox"],
+            result=Board.DRAW)
