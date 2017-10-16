@@ -1,3 +1,4 @@
+from operator import itemgetter
 from td_learning_player import TDLearningPlayer
 from random_player import RandomPlayer
 from human_player import HumanPlayer
@@ -28,13 +29,17 @@ def get_player_types():
     return sorted(get_learning_player_types() + list(NON_LEARNERS.keys()))
 
 def get_learning_player_descriptions():
-    return sorted(_get_player_descriptions(LEARNERS))
+    return _sort_by_player_type_and_get_description(_get_player_types_and_descriptions(LEARNERS))
 
 def get_player_descriptions():
-    return sorted(_get_player_descriptions(LEARNERS) + _get_player_descriptions(NON_LEARNERS))
+    return _sort_by_player_type_and_get_description(
+        _get_player_types_and_descriptions(LEARNERS) + _get_player_types_and_descriptions(NON_LEARNERS))
 
-def _get_player_descriptions(player_type_dict):
-    return [value["description"] for value in player_type_dict.values()]
+def _get_player_types_and_descriptions(player_type_dict):
+    return [(player_type, value["description"]) for player_type, value in player_type_dict.items()]
+
+def _sort_by_player_type_and_get_description(player_types_and_descriptions):
+    return list(map(itemgetter(1), sorted(player_types_and_descriptions, key=itemgetter(0))))
 
 def get_learning_player_command_line_args():
     return "\n".join(
