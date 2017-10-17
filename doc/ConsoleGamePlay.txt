@@ -6,18 +6,7 @@ loop1:
     select O player (human or some type of computer player)
     load computer players
 loop2:
-    current player = X
-    reset board
-    reset players
-    while winner is none:
-        indicate current player
-        show board
-        get move from current player
-        announce move
-        update board with move
-        switch current player to opposite piece
-    show board
-    display winner
+    Play One Game
     ask action:
     - quit
     - same players and pieces
@@ -29,3 +18,18 @@ loop2:
         swap players
         goto loop2
     goto loop1
+
+Play One Game
+-------------
+current player = X
+reset board
+reset players
+while winner is none:
+    indicate current player
+    show board
+    get move from current player
+    announce move
+    update board with move
+    switch current player to opposite piece
+show board
+display winner

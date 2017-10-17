@@ -1,11 +1,21 @@
 import unittest
-from mock import patch
+import player_types
+from mock import patch, call
 from io import StringIO
 from board import Board
 from human_player import HumanPlayer
 from random_player import RandomPlayer
+from td_learning_player import TDLearningPlayer
+from learning_computer_player import LearningComputerPlayer
 from console_game import ConsoleGame
 from board_test_utils import get_expected_formatted_board
+
+class MockLearningPlayer(LearningComputerPlayer):
+    def __init__(self, piece):
+        self.set_piece(piece)
+
+    def load(self, piece):
+        self.set_piece(piece)
 
 class TestConsoleGame(unittest.TestCase):
     def setUp(self):
@@ -78,6 +88,45 @@ class TestConsoleGame(unittest.TestCase):
 
         self.assertEqual(result, self.console.play_one_game(self.random1, self.random2))
         self.assertEqual(expected_output, stdout_mock.getvalue())
+
+    @patch('sys.stdout', new_callable=StringIO)
+    @patch('builtins.input')
+    def assert_select_player_selects(self, input_mock, stdout_mock, piece, menu_items, player_class):
+        input_mock.side_effect = menu_items
+        player = self.console._select_player(piece)
+        self.assertIsInstance(player, player_class)
+
+        expected_output = "Select {} player:\n".format(Board.format_piece(piece))
+        for item_num, description in enumerate(player_types.get_player_descriptions(), start=1):
+            expected_output += "{}: {}\n".format(item_num, description)
+
+        expected_output += "Invalid selection\n"*(len(menu_items) - 1)
+        expected_output += "\n"
+        self.assertEqual(expected_output, stdout_mock.getvalue())
+        self.assertEqual([call("Select player: ")]*len(menu_items), input_mock.call_args_list)
+
+    @patch('sys.stdout', new_callable=StringIO)
+    @patch('builtins.input')
+    def assert_action_is(self, input_mock, stdout_mock, menu_items, action):
+        input_mock.side_effect = menu_items
+        self.assertEqual(action, self.console._get_action())
+        
+        expected_output = """\
+Select action:
+1) Quit
+2) Same players and pieces
+3) Same players and different pieces
+4) Different players
+"""
+        expected_output += "Invalid selection\n"*(len(menu_items) - 1)
+        expected_output += "\n"
+        self.assertEqual(expected_output, stdout_mock.getvalue())
+        self.assertEqual([call("Select action: ")]*len(menu_items), input_mock.call_args_list)
+
+    def assert_swap_players_are(self, x_player, o_player):
+        new_x_player, new_o_player = self.console._swap_players(x_player, o_player)
+        self.assertEqual(new_x_player, o_player)
+        self.assertEqual(new_o_player, x_player)
 
     def test_play_one_human_game_stops_when_x_wins(self):
         self.assert_play_one_human_game_outputs(
@@ -166,3 +215,68 @@ class TestConsoleGame(unittest.TestCase):
                                    "ox-|xoo|xox",
                                    "oxx|xoo|xox"],
             result=Board.DRAW)
+
+    def test_select_player_for_x_human(self):
+        self.assert_select_player_selects(
+            piece=Board.X,
+            menu_items=[" 1 "],
+            player_class=HumanPlayer)
+
+    def test_select_player_for_o_random(self):
+        self.assert_select_player_selects(
+            piece=Board.O,
+            menu_items=["2"],
+            player_class=RandomPlayer)
+
+    @patch('td_learning_player.TDLearningPlayer.load')
+    def test_select_player_for_x_td_learning_player_loads_values(self, load_mock):
+        self.assert_select_player_selects(
+            piece=Board.X,
+            menu_items=["3"],
+            player_class=TDLearningPlayer)
+        load_mock.assert_called_once_with(Board.X)
+
+    def test_select_player_indicates_invalid_selection(self):
+        self.assert_select_player_selects(
+            piece=Board.X,
+            menu_items=["0", str(len(player_types.get_player_types()) + 1), "X", "1"],
+            player_class=HumanPlayer)
+
+    def test_get_action_quit(self):
+        self.assert_action_is(
+            menu_items=[" 1 "],
+            action=ConsoleGame.ACTION_QUIT)
+
+    def test_get_action_same_players_and_pieces(self):
+        self.assert_action_is(
+            menu_items=["2"],
+            action=ConsoleGame.ACTION_SAME_PLAYERS_AND_PIECES)
+
+    def test_get_action_same_players_diff_pieces(self):
+        self.assert_action_is(
+            menu_items=["3"],
+            action=ConsoleGame.ACTION_SAME_PLAYERS_DIFF_PIECES)
+
+    def test_get_action_diff_players(self):
+        self.assert_action_is(
+            menu_items=["4"],
+            action=ConsoleGame.ACTION_DIFF_PLAYERS)
+
+    def test_get_action_invalid_actions(self):
+        self.assert_action_is(
+            menu_items=["0", "5", "X", "1"],
+            action=ConsoleGame.ACTION_QUIT)
+
+    def test_swap_players_swaps_non_learners(self):
+        self.assert_swap_players_are(
+            x_player=HumanPlayer(),
+            o_player=RandomPlayer())
+
+    def test_swap_players_swaps_and_reloads_learners(self):
+        player1 = MockLearningPlayer(Board.X)
+        player2 = MockLearningPlayer(Board.O)
+        self.assert_swap_players_are(
+            x_player=player1,
+            o_player=player2)
+        self.assertEqual(Board.O, player1.piece)
+        self.assertEqual(Board.X, player2.piece)
