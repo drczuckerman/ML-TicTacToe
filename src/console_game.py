@@ -6,10 +6,10 @@ from computer_player import run_if_computer
 from learning_computer_player import run_if_learner
 
 class ConsoleGame(object):
-    ACTION_QUIT = 1
-    ACTION_SAME_PLAYERS_AND_PIECES = 2
-    ACTION_SAME_PLAYERS_DIFF_PIECES = 3
-    ACTION_DIFF_PLAYERS = 4
+    ACTION_SAME_PLAYERS_AND_PIECES = 1
+    ACTION_SAME_PLAYERS_DIFF_PIECES = 2
+    ACTION_DIFF_PLAYERS = 3
+    ACTION_QUIT = 4
 
     def play_one_game(self, player1, player2):
         self.controller = GameController(player1, player2)
@@ -58,7 +58,7 @@ class ConsoleGame(object):
         print("Select {} player:".format(Board.format_piece(piece)))
         descriptions = player_types.get_player_descriptions()
         for menu_num, description in enumerate(descriptions, start=1):
-            print("{}: {}".format(menu_num, description))
+            print("{}) {}".format(menu_num, description))
 
         index = self._get_selection("Select player", len(descriptions)) - 1
         player_type = player_types.get_player_types()[index]
@@ -82,10 +82,10 @@ class ConsoleGame(object):
     def _get_action(self):
         print("""\
 Select action:
-1) Quit
-2) Same players and pieces
-3) Same players and different pieces
-4) Different players""")
+1) Same players and pieces
+2) Same players and different pieces
+3) Different players
+4) Quit""")
         return self._get_selection("Select action", 4)
 
     def _swap_players(self, player1, player2):
@@ -93,32 +93,10 @@ Select action:
         run_if_learner(player2, lambda: player2.load(Board.X))
         return player2, player1
 
-from random_player import RandomPlayer
-from td_learning_player import TDLearningPlayer
-
 def main(args=sys.argv[1:]):
     console = ConsoleGame()
-    player2 = TDLearningPlayer()
-    player2.load(Board.O)
-    random_player = RandomPlayer()
-    num_games = 20000
-
-    _compete(num_games, console, random_player, player2)
-
-def _compete(num_games, console, player1, player2):
-    stats = {Board.X: 0, Board.O: 0, Board.DRAW: 0}
-    for n in range(num_games):
-        print("Game #{}".format(n))
-        winner = console.play_one_game(player1, player2)
-        stats[winner] += 1
-        if _random_player_wins(winner, player1) or _random_player_wins(winner, player2):
-            print("Random Player Won!")
-
-    print("X Losses={}%, O Losses={}%".format(
-        100.0*stats[Board.O]/num_games, 100.0*stats[Board.X]/num_games))
-
-def _random_player_wins(winner, player):
-    return isinstance(player, RandomPlayer) and winner == player.piece
+    console.play()
+    return 0
 
 if __name__ == "__main__":
     sys.exit(main())

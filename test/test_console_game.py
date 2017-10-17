@@ -7,7 +7,7 @@ from human_player import HumanPlayer
 from random_player import RandomPlayer
 from td_learning_player import TDLearningPlayer
 from learning_computer_player import LearningComputerPlayer
-from console_game import ConsoleGame
+from console_game import ConsoleGame, main
 from board_test_utils import get_expected_formatted_board
 
 class MockLearningPlayer(LearningComputerPlayer):
@@ -129,7 +129,7 @@ class TestConsoleGame(unittest.TestCase):
 
         expected_output = "Select {} player:\n".format(Board.format_piece(piece))
         for item_num, description in enumerate(player_types.get_player_descriptions(), start=1):
-            expected_output += "{}: {}\n".format(item_num, description)
+            expected_output += "{}) {}\n".format(item_num, description)
 
         expected_output += "Invalid selection\n"*(len(menu_items) - 1)
         expected_output += "\n"
@@ -144,10 +144,10 @@ class TestConsoleGame(unittest.TestCase):
         
         expected_output = """\
 Select action:
-1) Quit
-2) Same players and pieces
-3) Same players and different pieces
-4) Different players
+1) Same players and pieces
+2) Same players and different pieces
+3) Different players
+4) Quit
 """
         expected_output += "Invalid selection\n"*(len(menu_items) - 1)
         expected_output += "\n"
@@ -288,27 +288,27 @@ Select action:
 
     def test_get_action_quit(self):
         self.assert_action_is(
-            menu_items=[" 1 "],
+            menu_items=[" 4 "],
             action=ConsoleGame.ACTION_QUIT)
 
     def test_get_action_same_players_and_pieces(self):
         self.assert_action_is(
-            menu_items=["2"],
+            menu_items=["1"],
             action=ConsoleGame.ACTION_SAME_PLAYERS_AND_PIECES)
 
     def test_get_action_same_players_diff_pieces(self):
         self.assert_action_is(
-            menu_items=["3"],
+            menu_items=["2"],
             action=ConsoleGame.ACTION_SAME_PLAYERS_DIFF_PIECES)
 
     def test_get_action_diff_players(self):
         self.assert_action_is(
-            menu_items=["4"],
+            menu_items=["3"],
             action=ConsoleGame.ACTION_DIFF_PLAYERS)
 
     def test_get_action_invalid_actions(self):
         self.assert_action_is(
-            menu_items=["0", "5", "X", "1"],
+            menu_items=["0", "5", "X", "4"],
             action=ConsoleGame.ACTION_QUIT)
 
     def test_swap_players_swaps_non_learners(self):
@@ -396,4 +396,9 @@ Select action:
                 ("get_action",)
             ]
         )
+
+    @patch('console_game.ConsoleGame.play')
+    def test_main(self, play_mock):
+        self.assertEqual(0, main([]))
+        play_mock.assert_called_once_with()
 
