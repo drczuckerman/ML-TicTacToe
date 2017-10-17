@@ -42,7 +42,14 @@ class ConsoleGame(object):
         print()
 
     def play(self):
-        pass
+        action = self.ACTION_DIFF_PLAYERS
+        while action != self.ACTION_QUIT:
+            if action == self.ACTION_DIFF_PLAYERS:
+                player1, player2 = self._select_players()
+            elif action == self.ACTION_SAME_PLAYERS_DIFF_PIECES:
+                player1, player2 = self._swap_players(player1, player2)
+            self.play_one_game(player1, player2)
+            action = self._get_action()
 
     def _select_players(self):
         return self._select_player(Board.X), self._select_player(Board.O)
@@ -86,26 +93,17 @@ Select action:
         run_if_learner(player2, lambda: player2.load(Board.X))
         return player2, player1
 
+from random_player import RandomPlayer
+from td_learning_player import TDLearningPlayer
+
 def main(args=sys.argv[1:]):
-    from random_player import RandomPlayer
-    from td_learning_player import TDLearningPlayer
-    
     console = ConsoleGame()
-    player1 = TDLearningPlayer()
     player2 = TDLearningPlayer()
-    random_player = RandomPlayer()
-    player1.load(Board.X)
     player2.load(Board.O)
+    random_player = RandomPlayer()
     num_games = 20000
 
-    _compete(num_games, console, player1, player2)
-    input("Self done. Press ENTER to continue...")
-
-    _compete(num_games, console, player1, random_player)
-    input("X vs random done. Press ENTER to continue...")
-
     _compete(num_games, console, random_player, player2)
-    input("O vs random done. Press ENTER to continue...")
 
 def _compete(num_games, console, player1, player2):
     stats = {Board.X: 0, Board.O: 0, Board.DRAW: 0}
@@ -113,8 +111,14 @@ def _compete(num_games, console, player1, player2):
         print("Game #{}".format(n))
         winner = console.play_one_game(player1, player2)
         stats[winner] += 1
+        if _random_player_wins(winner, player1) or _random_player_wins(winner, player2):
+            print("Random Player Won!")
+
     print("X Losses={}%, O Losses={}%".format(
         100.0*stats[Board.O]/num_games, 100.0*stats[Board.X]/num_games))
+
+def _random_player_wins(winner, player):
+    return isinstance(player, RandomPlayer) and winner == player.piece
 
 if __name__ == "__main__":
     sys.exit(main())

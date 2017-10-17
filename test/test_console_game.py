@@ -17,6 +17,37 @@ class MockLearningPlayer(LearningComputerPlayer):
     def load(self, piece):
         self.set_piece(piece)
 
+class ConsoleGameSpy(ConsoleGame):
+    def __init__(self, actions):
+        self.calls = []
+        self.actions = actions
+        self.action_indices = {"select_players": 0, "get_action": 0}
+
+    def _select_players(self):
+         self._report_call("select_players")
+         action = self._get_next_action("select_players")
+         return action["x_player"](), action["o_player"]()
+
+    def play_one_game(self, player1, player2):
+        self._report_call("play_one_game", player1.__class__, player2.__class__)
+
+    def _get_action(self):
+        self._report_call("get_action")
+        return self._get_next_action("get_action")
+
+    def _swap_players(self, player1, player2):
+        self._report_call("swap_players")
+        return player2, player1
+
+    def _report_call(self, action_type, *args):
+        self.calls.append((action_type,) + args)
+
+    def _get_next_action(self, action_type):
+        index = self.action_indices[action_type]
+        action = self.actions[action_type][index]
+        self.action_indices[action_type] = index + 1
+        return action
+
 class TestConsoleGame(unittest.TestCase):
     def setUp(self):
         self.human1 = HumanPlayer()
@@ -127,6 +158,11 @@ Select action:
         new_x_player, new_o_player = self.console._swap_players(x_player, o_player)
         self.assertEqual(new_x_player, o_player)
         self.assertEqual(new_o_player, x_player)
+
+    def assert_play_does(self, actions, expected_calls):
+        console_spy = ConsoleGameSpy(actions)
+        console_spy.play()
+        self.assertEqual(expected_calls, console_spy.calls)
 
     def test_play_one_human_game_stops_when_x_wins(self):
         self.assert_play_one_human_game_outputs(
@@ -288,3 +324,76 @@ Select action:
             o_player=player2)
         self.assertEqual(Board.O, player1.piece)
         self.assertEqual(Board.X, player2.piece)
+
+    def test_play_and_quit(self):
+        self.assert_play_does(
+            actions=\
+            {
+                "select_players": [{"x_player": HumanPlayer, "o_player": RandomPlayer}],
+                "get_action": [ConsoleGame.ACTION_QUIT]
+            },
+            expected_calls=\
+            [
+                ("select_players",),
+                ("play_one_game", HumanPlayer, RandomPlayer),
+                ("get_action",)
+            ]
+        )
+
+    def test_play_and_same_players_and_pieces(self):
+        self.assert_play_does(
+            actions=\
+            {
+                "select_players": [{"x_player": RandomPlayer, "o_player": TDLearningPlayer}],
+                "get_action": [ConsoleGame.ACTION_SAME_PLAYERS_AND_PIECES, ConsoleGame.ACTION_QUIT]
+            },
+            expected_calls=\
+            [
+                ("select_players",),
+                ("play_one_game", RandomPlayer, TDLearningPlayer),
+                ("get_action",),
+                ("play_one_game", RandomPlayer, TDLearningPlayer),
+                ("get_action",)
+            ]
+        )
+
+    def test_play_and_same_players_and_diff_pieces(self):
+        self.assert_play_does(
+            actions=\
+            {
+                "select_players": [{"x_player": HumanPlayer, "o_player": TDLearningPlayer}],
+                "get_action": [ConsoleGame.ACTION_SAME_PLAYERS_DIFF_PIECES, ConsoleGame.ACTION_QUIT]
+            },
+            expected_calls=\
+            [
+                ("select_players",),
+                ("play_one_game", HumanPlayer, TDLearningPlayer),
+                ("get_action",),
+                ("swap_players",),
+                ("play_one_game", TDLearningPlayer, HumanPlayer),
+                ("get_action",)
+            ]
+        )
+
+    def test_play_and_diff_players(self):
+        self.assert_play_does(
+            actions=\
+            {
+                "select_players": \
+                [
+                    {"x_player": RandomPlayer, "o_player": TDLearningPlayer},
+                    {"x_player": HumanPlayer, "o_player": RandomPlayer}
+                ],
+                "get_action": [ConsoleGame.ACTION_DIFF_PLAYERS, ConsoleGame.ACTION_QUIT]
+            },
+            expected_calls=\
+            [
+                ("select_players",),
+                ("play_one_game", RandomPlayer, TDLearningPlayer),
+                ("get_action",),
+                ("select_players",),
+                ("play_one_game", HumanPlayer, RandomPlayer),
+                ("get_action",)
+            ]
+        )
+
