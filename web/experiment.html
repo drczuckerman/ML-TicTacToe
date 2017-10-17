@@ -1,0 +1,108 @@
+<html>
+    <head>
+        <style>
+            html
+            {
+                font-family: Arial;
+                padding: 6px;
+            }
+            table.board
+            {
+                border-collapse: collapse;
+            }
+            .board td
+            {
+                border-width: 10px;
+                border-style: solid;
+                border-left-color: black;
+                border-right-color: black;
+                border-top-color: black;
+                border-bottom-color: black;
+                width: 100px;
+                height: 100px;
+                text-align: center;
+                vertical-align: middle;
+                cursor: pointer;
+            }
+            .x, .o
+            {
+                font-size: 48px;
+            }
+            .x
+            {
+                color: red;
+            }
+            .o
+            {
+                color: blue;
+            }
+            .empty
+            {
+                color: black;
+                font-size: 36px;
+            }
+            .win
+            {
+                font-size: 72px;
+                font-weight: bold;
+            }
+            .draw
+            {
+                color: black;
+            }
+            .left-col
+            {
+                border-left-color: white !important;
+            }
+            .right-col
+            {
+                border-right-color: white !important;
+            }
+            .top-row
+            {
+                border-top-color: white !important;
+            }
+            .bottom-row
+            {
+                border-bottom-color: white !important;
+            }
+            .status
+            {
+                width: 300px;
+                text-align: center;
+                padding: 20px;
+            }
+            .status .win, .status .draw, .status .turn
+            {
+                font-size: 48px;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Machine Learning Tic-Tac-Toe</h1>
+        <div class="status">
+            <span class="x win">Game Over</span>
+        </div>
+        <table class="board">
+            <tr>
+                <td class="left-col top-row"><span class="x win">X</span></td>
+                <td class="middle-col top-row"><span class="o">O</span></td>
+                <td class="right-col top-row"><span class="o">O</span></td>
+            </tr>
+            <tr>
+                <td class="left-col middle-row"><span class="x win">X</span></td>
+                <td class="middle-col middle-row"><span class="x">X</span></td>
+                <td class="right-col middle-row"><span class="empty">6</span></td>
+            </tr>
+            <tr>
+                <td class="left-col bottom-row"><span class="x win">X</span></td>
+                <td class="middle-col bottom-row"><span class="empty">8</span></td>
+                <td class="right-col bottom-row"><span class="o">O</span></td>
+            </tr>
+        </table>
+        <div class="status">
+            <span class="x win">X Wins</span>
+        </div>
+    </body>
+</html>
+
