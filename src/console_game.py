@@ -44,6 +44,9 @@ class ConsoleGame(object):
     def play(self):
         pass
 
+    def _select_players(self):
+        return self._select_player(Board.X), self._select_player(Board.O)
+
     def _select_player(self, piece):
         print("Select {} player:".format(Board.format_piece(piece)))
         descriptions = player_types.get_player_descriptions()

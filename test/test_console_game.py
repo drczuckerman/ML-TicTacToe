@@ -242,6 +242,14 @@ Select action:
             menu_items=["0", str(len(player_types.get_player_types()) + 1), "X", "1"],
             player_class=HumanPlayer)
 
+    @patch('console_game.ConsoleGame._select_player')
+    def test_select_players(self, select_mock):
+        select_mock.side_effect = [RandomPlayer(), HumanPlayer()]
+        player1, player2 = self.console._select_players()
+        self.assertIsInstance(player1, RandomPlayer)
+        self.assertIsInstance(player2, HumanPlayer)
+        self.assertEqual([call(Board.X), call(Board.O)], select_mock.call_args_list)
+
     def test_get_action_quit(self):
         self.assert_action_is(
             menu_items=[" 1 "],
