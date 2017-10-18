@@ -1,0 +1,100 @@
+html
+{
+    font-family: Arial;
+}
+
+table.board
+{
+    border-collapse: collapse;
+}
+
+.board td
+{
+    border-width: 10px;
+    border-style: solid;
+    border-left-color: black;
+    border-right-color: black;
+    border-top-color: black;
+    border-bottom-color: black;
+    width: 100px;
+    height: 100px;
+    text-align: center;
+    vertical-align: middle;
+    cursor: default;
+}
+
+.x, .o
+{
+    font-size: 48px;
+}
+
+.x
+{
+    color: red;
+}
+
+.o
+{
+    color: blue;
+}
+
+.empty
+{
+    color: black;
+    font-size: 36px;
+    cursor: pointer;
+}
+
+.win
+{
+    font-size: 72px;
+    font-weight: bold;
+}
+
+.draw
+{
+    color: black;
+}
+
+.left-col
+{
+    border-left-color: white !important;
+}
+
+.right-col
+{
+    border-right-color: white !important;
+}
+
+.top-row
+{
+    border-top-color: white !important;
+}
+
+.bottom-row
+{
+    border-bottom-color: white !important;
+}
+
+.status
+{
+    width: 300px;
+    text-align: center;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.top
+{
+    padding-bottom: 10px;
+}
+
+.bottom
+{
+    padding-top: 10px;
+}
+
+.status .win, .status .draw
+{
+    font-size: 36px;
+}
