@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
     <head>
-        <link rel="stylesheet" type="text/css" href="css/style.css">
-        <link rel="icon" type="image/x-icon" href="favicon.ico">
+        <link rel="stylesheet" type="text/css" href="/css/style.css">
+        <link rel="icon" type="image/x-icon" href="/favicon.ico">
     </head>
     <body>
         <h1>Machine Learning Tic-Tac-Toe</h1>
-        <div class="status top">
+        <div class="status">
             <span class="x win">Game Over</span>
         </div>
         <table class="board">
             <tr>
-                <td class="left-col top-row x win">X</td>
+                <td class="left-col top-row"><span class="x win">X</span></td>
                 <td class="middle-col top-row"><span class="o">O</span></td>
                 <td class="right-col top-row"><span class="o">O</span></td>
             </tr>
@@ -26,8 +26,14 @@
                 <td class="right-col bottom-row"><span class="o">O</span></td>
             </tr>
         </table>
-        <div class="status bottom">
+        <div class="status">
             <span class="x win">X Wins</span>
         </div>
+        <p>
+            <strong>Play Again?</strong><br>
+            <button id="same_players_and_pieces">Same Players, Same Pieces</button>
+            <button id="same_players_diff_pieces">Same Players, Diff Pieces</button>
+            <button id="diff_players">Diff Players</button>
+        </p>
     </body>
 </html>

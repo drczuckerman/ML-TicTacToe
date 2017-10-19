@@ -1,11 +1,41 @@
-html
+body
 {
     font-family: Arial;
+    width: 100%;
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
 }
 
-table.board
+p, select, button
+{
+    font-size: 24px;
+}
+
+h1
+{
+    font-size: 36px;
+}
+
+label
+{
+    font-weight: bold;
+}
+
+button
+{
+    color: white;
+    background-color: purple;
+    border-radius: 12px;
+    border: 2px outset gray;
+    cursor: pointer;
+}
+
+table
 {
     border-collapse: collapse;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .board td
@@ -23,7 +53,7 @@ table.board
     cursor: default;
 }
 
-.x, .o
+.board .x, .board .o
 {
     font-size: 48px;
 }
@@ -38,16 +68,20 @@ table.board
     color: blue;
 }
 
-.empty
+.board .empty
 {
     color: black;
     font-size: 36px;
     cursor: pointer;
 }
 
-.win
+.board .win
 {
     font-size: 72px;
+}
+
+.win, .draw, .status
+{
     font-weight: bold;
 }
 
@@ -77,24 +111,6 @@ table.board
 }
 
 .status
-{
-    width: 300px;
-    text-align: center;
-    padding-left: 20px;
-    padding-right: 20px;
-}
-
-.top
-{
-    padding-bottom: 10px;
-}
-
-.bottom
-{
-    padding-top: 10px;
-}
-
-.status .win, .status .draw
 {
     font-size: 36px;
 }

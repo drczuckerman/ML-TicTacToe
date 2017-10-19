@@ -1,13 +1,14 @@
 import os
+import web_utils
 from bottle import get, run, template, static_file
 from board import Board
 
-@get('/hello/<name>')
-def index(name):
-    return template('<b>Hello {{name}}</b>!', name=name)
+@get('/')
+def select_players():
+    return template(web_utils.get_template_path("select_player"))
 
 @get('<path:path>')
 def static(path):
-    return static_file(path, root=os.path.dirname(__file__))
+    return static_file(path, root=web_utils.root)
 
-run(host='localhost', port=8888)
+run(host="0.0.0.0", port=8888)
