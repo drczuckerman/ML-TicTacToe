@@ -40,12 +40,6 @@ table
 
 .board td
 {
-    border-width: 10px;
-    border-style: solid;
-    border-left-color: black;
-    border-right-color: black;
-    border-top-color: black;
-    border-bottom-color: black;
     width: 100px;
     height: 100px;
     text-align: center;
@@ -90,24 +84,33 @@ table
     color: black;
 }
 
+.left-col, .right-col, .top-row, .bottom-row
+{
+    border-width: 10px;
+}
+
 .left-col
 {
-    border-left-color: white !important;
+    border-right-color: black;
+    border-right-style: solid;
 }
 
 .right-col
 {
-    border-right-color: white !important;
+    border-left-color: black;
+    border-left-style: solid;
 }
 
 .top-row
 {
-    border-top-color: white !important;
+    border-bottom-color: black;
+    border-bottom-style: solid;
 }
 
 .bottom-row
 {
-    border-bottom-color: white !important;
+    border-top-color: black;
+    border-top-style: solid;
 }
 
 .status
