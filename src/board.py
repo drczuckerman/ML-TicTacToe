@@ -42,8 +42,9 @@ class Board(object):
 
         return self.DRAW if self.state.count(self.EMPTY) == 0 else None
 
-    def get_winner_text(self, winner):
-        return self.WINNER_DICT.get(winner)
+    @staticmethod
+    def get_winner_text(winner):
+        return Board.WINNER_DICT.get(winner)
 
     def format_board(self):
         winning_positions = self.get_winning_positions()

@@ -8,7 +8,7 @@
     % piece_lcase = piece.lower()
     <p class="{{piece_lcase}}">
     <label for="{{piece_lcase}}_player">Select {{piece}} Player:</label>
-    <select id="{{piece_lcase}}_player">
+    <select id="{{piece_lcase}}_player" class="{{piece_lcase}}">
     % for player_type, description in \
     %        zip(player_types.get_player_types(), player_types.get_player_descriptions()):
         <option value="{{player_type}}">{{description}}</option>

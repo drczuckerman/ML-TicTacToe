@@ -246,10 +246,10 @@ class TestBoard(unittest.TestCase):
         self.assert_try_move_is(Board.DRAW, "OXO|XXO|OO-", "OXO|XXO|OOX", 8, Board.X)
 
     def test_get_winner_text(self):
-        self.assertEqual(None, self.board.get_winner_text(None))
-        self.assertEqual("X Wins", self.board.get_winner_text(Board.X))
-        self.assertEqual("O Wins", self.board.get_winner_text(Board.O))
-        self.assertEqual("Draw", self.board.get_winner_text(Board.DRAW))
+        self.assertEqual(None, Board.get_winner_text(None))
+        self.assertEqual("X Wins", Board.get_winner_text(Board.X))
+        self.assertEqual("O Wins", Board.get_winner_text(Board.O))
+        self.assertEqual("Draw", Board.get_winner_text(Board.DRAW))
 
     def test_format_piece(self):
         self.assertEqual("X", Board.format_piece(Board.X))

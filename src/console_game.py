@@ -38,7 +38,7 @@ class ConsoleGame(object):
     def _show_game_over(self, winner):
         print("Game over")
         self._show_board()
-        print(self.controller.board.get_winner_text(winner))
+        print(Board.get_winner_text(winner))
         print()
 
     def play(self):
