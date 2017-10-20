@@ -40,11 +40,10 @@
 </table>
 
 <div class="status">
-% winner_text = Board.get_winner_text(winner)
-% if winner == Board.DRAW:
-    <span class="draw">{{winner_text}}</span>
-% elif winner is not None:
-    <span class="{{winner_piece.lower()}} win">{{winner_text}}</span>
+% if winner is not None:
+    % winner_text = Board.get_winner_text(winner)
+    % class_name = "draw" if winner == Board.X else winner_piece.lower()
+    <span class="{{class_name}}">{{winner_text}}</span>
 % end
 </div>
 
