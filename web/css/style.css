@@ -62,11 +62,20 @@ table
     color: blue;
 }
 
-.board .empty
+.board .empty, .board .empty-disabled
 {
     color: black;
     font-size: 36px;
+}
+
+.board .empty
+{
     cursor: pointer;
+}
+
+.board .empty-disabled
+{
+    cursor: default;
 }
 
 .board .win
@@ -74,7 +83,7 @@ table
     font-size: 72px;
 }
 
-.win, .draw, .status
+.win, .draw
 {
     font-weight: bold;
 }
@@ -116,4 +125,12 @@ table
 .status
 {
     font-size: 36px;
+    font-weight: bold;
 }
+
+.waiting
+{
+    color: red;
+    background-color: yellow;
+}
+

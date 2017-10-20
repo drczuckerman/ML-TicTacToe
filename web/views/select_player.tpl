@@ -2,6 +2,10 @@
 % include(web_utils.get_template_path("header"))
 % import player_types
 % from board import Board
+
+</head>
+<body>
+<h1>Machine Learning Tic-Tac-Toe</h1>
 <div class="select-players">
 % for piece_value in [Board.X, Board.O]:
     % piece = Board.format_piece(piece_value)

@@ -1,0 +1,95 @@
+Web Game Play
+=============
+
+NOTE: This currently only works for a single web user. A session manager would
+      need to be added to make this truly useful. However, this is good enough
+      for a prototype demonstration.
+
+Back End
+--------
+
+GET / (Select Players)
+~~~~~~~~~~~~~~~~~~~~~~
+return page to select player types
+
+POST /play (Play Game)
+~~~~~~~~~~~~~~~~~~~~~~
+Input: {'x': x player type, 'o': o player type}
+
+initialize game and players for specified player types
+load computer players
+return page containing empty board with all squares disabled
+
+GET /computer_move
+~~~~~~~~~~~~~~~~~~
+make computer move
+go to next player
+return page portion containing board update
+
+POST /human_move
+~~~~~~~~~~~~~~~~
+Input: {'move': square number}
+
+make human move given square number
+go to next player
+return page portion containing board update
+
+Front End
+---------
+
+Select Players
+~~~~~~~~~~~~~~
+
+On Click "Play" button
+......................
+disable "Play" button
+POST /play {'x': x player type, 'o': o player type}
+
+Play Game
+~~~~~~~~~
+Input: {'x': x player type, 'o': o player type}
+
+save player types
+display board
+if computer player is X:
+    indicate waiting
+    GET /computer_move
+else, enable empty squares
+
+On GET /computer_move Completion or POST /human_move Completion
+...............................................................
+update board
+if game not over:
+    if current player is computer:
+        pause small amount of time
+        indicate waiting
+        GET /computer_move
+    else, enable empty squares
+
+On Click Empty Square
+.....................
+disable empty squares
+update board with move
+indicate waiting
+POST /human_move {'move': square number}
+
+On Click "Same Players, Same Pieces" Button
+...........................................
+do Common Button Actions
+POST /play {'x': x player type, 'player2': o player type}
+
+On Click "Same Players, Different Pieces" Button
+................................................
+do Common Button Actions
+POST /play {'x': o player type', 'o': x player type}
+
+On click "Diff Players" Button
+..............................
+do Common Button Actions
+GET /
+
+Common Button Actions
+.....................
+disable buttons
+indicate waiting
+
