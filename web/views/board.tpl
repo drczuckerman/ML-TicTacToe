@@ -47,7 +47,7 @@
 % end
 </div>
 
-% if winner:
+% if winner is not None:
     <p>
     <strong>Play Again?</strong><br>
     <button id="same_players_and_pieces">Same Players, Same Pieces</button>
