@@ -1,6 +1,12 @@
 % from board import Board
-<div class="status">
+
+% turn_piece = Board.format_piece(game_info["turn"])
+<input id="turn" type="hidden" value="{{turn_piece.lower()}}">
 % winner = game_info["winner"]
+<input id="game-over" type="hidden" value="{{1 if winner is not None else 0}}">
+
+<div class="game-container">
+<div class="status">
 % winner_piece = None
 % if winner == Board.DRAW:
     <span class="draw">Game Over</span>
@@ -8,7 +14,6 @@
     % winner_piece = Board.format_piece(winner)
     <span class="{{winner_piece.lower()}} win">Game Over</span>
 % else:
-    % turn_piece = Board.format_piece(game_info["turn"])
     <span class="{{turn_piece.lower()}}">It's your turn, {{turn_piece}}</span>
 % end
 </div>
@@ -42,7 +47,7 @@
 <div class="status">
 % if winner is not None:
     % winner_text = Board.get_winner_text(winner)
-    % class_name = "draw" if winner == Board.X else winner_piece.lower()
+    % class_name = "draw" if winner == Board.DRAW else winner_piece.lower()
     <span class="{{class_name}}">{{winner_text}}</span>
 % end
 </div>
@@ -55,4 +60,5 @@
     <button id="diff_players">Diff Players</button>
     </p>
 % end
+</div>
 </div>

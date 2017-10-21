@@ -29,10 +29,11 @@ def select_players():
 @post('/play')
 def play():
     global controller
-    player1 = get_and_load_player(request.forms.get("x"), Board.X)
-    player2 = get_and_load_player(request.forms.get("o"), Board.O)
+    player1 = get_and_load_player(request.forms["x"], Board.X)
+    player2 = get_and_load_player(request.forms["o"], Board.O)
     controller = GameController(player1, player2)
-    return template(web_utils.get_template_path("play"), game_info=get_game_info(controller))
+    return template(
+        web_utils.get_template_path("play"), game_info=get_game_info(controller), player_types=request.forms)
 
 @get('/computer_move')
 def get_computer_move():
