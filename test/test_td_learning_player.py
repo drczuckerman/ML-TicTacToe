@@ -2,11 +2,15 @@ import unittest
 import random
 import pickle
 import os
-from mock import patch
+from mock import patch, Mock
 from io import BytesIO
 from td_learning_player import TDLearningPlayer
+from learning_computer_player import run_if_learner
+from computer_player import run_if_computer
+from human_player import run_if_human
 from board import Board
-from board_test_utils import get_board_state_tuple, set_board, assert_get_move_is, assert_get_move_values_are
+from board_test_utils import get_board_state_tuple, set_board, assert_get_move_is, \
+    assert_get_move_values_are
 from mock_random import MockRandom
 
 class TestTdLearningPlayer(unittest.TestCase):
@@ -15,6 +19,7 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.board = Board()
         self.player.set_board(self.board)
         self.player.enable_learning()
+        self.func = Mock()
 
     def assert_stored_states_are(self, pieces_list, position, piece):
         self.board.make_move(position, piece)
@@ -316,3 +321,15 @@ class TestTdLearningPlayer(unittest.TestCase):
 
     def test_indicate_move(self):
         self.assertEqual("My move is 8", self.player.indicate_move(7))
+
+    def test_run_if_learner_runs_function_if_td_learner(self):
+        run_if_learner(self.player, self.func)
+        self.func.assert_called_once_with()
+
+    def test_run_if_computer_runs_function_if_td_learner(self):
+        run_if_computer(self.player, self.func)
+        self.func.assert_called_once_with()
+
+    def test_run_if_human_does_not_run_function_if_td_learner(self):
+        run_if_human(self.player, self.func)
+        self.func.assert_not_called()

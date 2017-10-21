@@ -1,7 +1,15 @@
 from player import Player
 
 class HumanPlayer(Player):
+    def __init__(self):
+        super().__init__()
+        self.set_interactive()
+        self.move = None
+
     def get_move(self):
+        if not self.interactive:
+            return self.move
+
         while True:
             position = input("Enter move: ").strip()
             if not position.isdigit():
@@ -14,3 +22,17 @@ class HumanPlayer(Player):
                 continue
 
             return position
+
+    def set_interactive(self):
+        self.interactive = True
+
+    def set_non_interactive(self):
+        self.interactive = False
+
+    def set_move(self, position):
+        self.move = position - 1
+
+def run_if_human(player, func):
+    if isinstance(player, HumanPlayer):
+        func()
+

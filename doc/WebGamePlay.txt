@@ -51,20 +51,29 @@ Input: {'x': x player type, 'o': o player type}
 
 save player types
 display board
-if computer player is X:
+if X player is human, enable empty squares
+else:
     indicate waiting
     GET /computer_move
-else, enable empty squares
 
-On GET /computer_move Completion or POST /human_move Completion
-...............................................................
+On GET /computer_move Completion
+................................
 update board
 if game not over:
-    if current player is computer:
+    if current player is human, enable empty squares
+    else:
         pause small amount of time
         indicate waiting
         GET /computer_move
-    else, enable empty squares
+
+On POST /human_move Completion
+..............................
+update board
+if game not over:
+    if current player is human, enable empty squares
+    else:
+        indicate waiting
+        GET /computer_move
 
 On Click Empty Square
 .....................
@@ -76,7 +85,7 @@ POST /human_move {'move': square number}
 On Click "Same Players, Same Pieces" Button
 ...........................................
 do Common Button Actions
-POST /play {'x': x player type, 'player2': o player type}
+POST /play {'x': x player type, 'o': o player type}
 
 On Click "Same Players, Different Pieces" Button
 ................................................
@@ -92,4 +101,3 @@ Common Button Actions
 .....................
 disable buttons
 indicate waiting
-

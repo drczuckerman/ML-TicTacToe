@@ -1,6 +1,9 @@
 import unittest
-from mock import patch
+from mock import patch, Mock
 from random_player import RandomPlayer
+from computer_player import run_if_computer
+from learning_computer_player import run_if_learner
+from human_player import run_if_human
 from board import Board
 from board_test_utils import assert_get_move_is, assert_get_move_values_are
 from mock_random import MockRandom
@@ -10,6 +13,7 @@ class TestRandomPlayer(unittest.TestCase):
         self.player = RandomPlayer()
         self.board = Board()
         self.player.set_board(self.board)
+        self.func = Mock()
 
     def test_constructor_initializes_board_and_piece_to_none(self):
         player = RandomPlayer()
@@ -35,3 +39,15 @@ class TestRandomPlayer(unittest.TestCase):
 
     def test_indicate_move(self):
         self.assertEqual("My move is 4", self.player.indicate_move(3))
+
+    def test_run_if_computer_runs_function_if_random_player(self):
+        run_if_computer(self.player, self.func)
+        self.func.assert_called_once_with()
+
+    def test_run_if_learner_does_not_run_function_if_random_player(self):
+        run_if_learner(self.player, self.func)
+        self.func.assert_not_called()
+
+    def test_run_if_human_does_not_run_function_if_random_player(self):
+        run_if_human(self.player, self.func)
+        self.func.assert_not_called()
