@@ -24,7 +24,7 @@
         <td class="{{row_classes[row]}} {{col_classes[col]}}">
         % pos = row*3 + col
         % if board[pos] == Board.EMPTY:
-            <span class="empty">{{pos + 1}}</span>
+            <span class="empty-disabled">{{pos + 1}}</span>
         % else:
             % piece = Board.format_piece(board[pos])
             % class_names = [piece.lower()]
