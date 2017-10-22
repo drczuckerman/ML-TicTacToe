@@ -45,7 +45,7 @@ function get_from_server(url, done_function, error_function)
 function communicate_with_server(ajax_struct, done_function, error_function)
 {
     indicate_no_error();
-    indicate_waiting();
+    deferred_indicate_waiting();
     $.ajax(ajax_struct)
     .done(done_function)
     .fail(function(jqXHR, textStatus, errorThrown)
@@ -147,14 +147,10 @@ function indicate_no_error()
     $("#error").html("");
 }
 
-function indicate_waiting()
+function deferred_indicate_waiting()
 {
     stop_waiting_timer();
-    waiting_timer = setTimeout(function()
-    {
-        show_class_text("waiting", "Waiting for server...");
-    },
-    500);
+    waiting_timer = setTimeout(indicate_waiting, 500);
 }
 
 function stop_waiting_timer()
@@ -165,6 +161,11 @@ function stop_waiting_timer()
     }
 
     waiting_timer = null;
+}
+
+function indicate_waiting()
+{
+    show_class_text("waiting", "Waiting for server...");
 }
 
 function indicate_not_waiting()
