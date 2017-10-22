@@ -155,7 +155,7 @@ Select action:
         self.assertEqual([call("Select action: ")]*len(menu_items), input_mock.call_args_list)
 
     def assert_swap_players_are(self, x_player, o_player):
-        new_x_player, new_o_player = self.console._swap_players(x_player, o_player)
+        new_x_player, new_o_player = self.console.swap_players(x_player, o_player)
         self.assertEqual(new_x_player, o_player)
         self.assertEqual(new_o_player, x_player)
 

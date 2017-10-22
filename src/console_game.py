@@ -1,11 +1,12 @@
 import sys
 import player_types
+from game import Game
 from board import Board
 from game_controller import GameController
 from computer_player import run_if_computer
 from learning_computer_player import run_if_learner
 
-class ConsoleGame(object):
+class ConsoleGame(Game):
     ACTION_SAME_PLAYERS_AND_PIECES = 1
     ACTION_SAME_PLAYERS_DIFF_PIECES = 2
     ACTION_DIFF_PLAYERS = 3
@@ -62,9 +63,7 @@ class ConsoleGame(object):
 
         index = self._get_selection("Select player", len(descriptions)) - 1
         player_type = player_types.get_player_types()[index]
-        player = player_types.get_player(player_type)
-        run_if_learner(player, lambda: player.load(piece))
-        return player
+        return self.get_and_load_player(player_type, piece)
 
     def _get_selection(self, prompt, max_value):
         while True:
@@ -87,11 +86,6 @@ Select action:
 3) Different players
 4) Quit""")
         return self._get_selection("Select action", 4)
-
-    def _swap_players(self, player1, player2):
-        run_if_learner(player1, lambda: player1.load(Board.O))
-        run_if_learner(player2, lambda: player2.load(Board.X))
-        return player2, player1
 
 def main(args=sys.argv[1:]):
     console = ConsoleGame()

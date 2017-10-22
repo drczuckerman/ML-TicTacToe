@@ -26,19 +26,19 @@
 % for row in range(3):
     <tr>
     % for col in range(3):
-        <td class="{{row_classes[row]}} {{col_classes[col]}}">
         % pos = row*3 + col
+        % class_names = [row_classes[row], col_classes[col]]
         % if board[pos] == Board.EMPTY:
-            <span class="empty-disabled">{{pos + 1}}</span>
+            % class_names.append("empty-disabled")
+            % text = str(pos + 1)
         % else:
-            % piece = Board.format_piece(board[pos])
-            % class_names = [piece.lower()]
+            % text = Board.format_piece(board[pos])
+            % class_names.append(text.lower())
             % if pos in winning_positions:
                 % class_names.append("win")
             % end
-            <span class="{{" ".join(class_names)}}">{{piece}}</span>
         % end
-        </td>
+        <td class="{{" ".join(class_names)}}">{{text}}</td>
     % end
     </tr>
 % end
@@ -55,9 +55,9 @@
 % if winner is not None:
     <p>
     <strong>Play Again?</strong><br>
-    <button id="same_players_and_pieces">Same Players, Same Pieces</button>
-    <button id="same_players_diff_pieces">Same Players, Diff Pieces</button>
-    <button id="diff_players">Diff Players</button>
+    <button id="same-players-same-pieces">Same Players, Same Pieces</button>
+    <button id="same-players-diff-pieces">Same Players, Diff Pieces</button>
+    <button id="diff-players">Diff Players</button>
     </p>
 % end
 </div>

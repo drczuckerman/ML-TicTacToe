@@ -31,6 +31,17 @@ button
     cursor: pointer;
 }
 
+button[disabled="disabled"]
+{
+    background-color: gray;
+    cursor: default;
+}
+
+button:not([disabled="disabled"]):hover
+{
+    background-color: darkgreen;
+}
+
 table
 {
     border-collapse: collapse;
@@ -64,17 +75,23 @@ table
 
 .board .empty, .board .empty-disabled
 {
-    color: black;
     font-size: 36px;
 }
 
 .board .empty
 {
+    color: black;
     cursor: pointer;
+}
+
+.board .empty:hover
+{
+    text-decoration: underline;
 }
 
 .board .empty-disabled
 {
+    color: gray;
     cursor: default;
 }
 
@@ -128,9 +145,21 @@ table
     font-weight: bold;
 }
 
-.waiting
+.waiting, .error
 {
-    color: red;
-    background-color: yellow;
+    padding: 10px;
 }
 
+.waiting
+{
+    border: 1px solid black;
+    background-color: lightgray;
+    color: black;
+}
+
+.error
+{
+    border: 1px solid red;
+    background-color: yellow;
+    color: red;
+}
