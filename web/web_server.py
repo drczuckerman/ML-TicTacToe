@@ -1,6 +1,6 @@
 from bottle import get, post, run, static_file, request, response
 from web_game_manager import WebGameManager, start_web_game_manager_thread
-from web_utils import get_template
+from web_utils import get_template, root
 
 @get('/')
 def home():
@@ -34,7 +34,7 @@ def make_move(game_id, move_func):
 
 @get('<path:path>')
 def get_static(path):
-    return static_file(path, root=web_utils.root)
+    return static_file(path, root=root)
 
 @post('<path:path>')
 def post_static(path):
@@ -43,3 +43,4 @@ def post_static(path):
 manager = WebGameManager()
 start_web_game_manager_thread(manager)
 run(host="0.0.0.0", port=8888)
+
