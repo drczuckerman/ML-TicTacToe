@@ -102,17 +102,17 @@ class TestWebGame(unittest.TestCase):
             expected_player2_loaded=True)
 
     @patch('random_player.RandomPlayer.get_move')
-    def test_get_computer_move(self, get_move_mock):
+    def test_make_computer_move(self, get_move_mock):
         get_move_mock.return_value = 4
         self.game.start_game({"x": "Random", "o": "Human"})
         set_board(self.game.controller.board, "XXO|O-X|OOX")
-        self.assert_game_info_is(Board.X, [0, 4, 8], Board.O, "XXO|OXX|OOX", self.game.get_computer_move())
+        self.assert_game_info_is(Board.X, [0, 4, 8], Board.O, "XXO|OXX|OOX", self.game.make_computer_move())
 
     @patch('random_player.RandomPlayer.get_move')
-    def test_get_human_move(self, get_move_mock):
+    def test_make_human_move(self, get_move_mock):
         get_move_mock.return_value = 6
         self.game.start_game({"x": "Random", "o": "Human"})
-        self.game.get_computer_move()
+        self.game.make_computer_move()
         set_board(self.game.controller.board, "OXX|O-X|---")
         self.assert_game_info_is(
-            Board.O, [0, 3, 6], Board.X, "OXX|O-X|O--", self.game.get_human_move(" 7 "))
+            Board.O, [0, 3, 6], Board.X, "OXX|O-X|O--", self.game.make_human_move(" 7 "))

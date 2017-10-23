@@ -33,14 +33,14 @@ class WebGame(Game):
             self.player_types_dict[piece] = player_type
         return player
 
-    def get_computer_move(self):
+    def make_computer_move(self):
         return self._make_move()
 
     def _make_move(self):
         winner, _ = self.controller.make_move()
         return self._get_game_info(winner)
 
-    def get_human_move(self, position):
+    def make_human_move(self, position):
         player = self.controller.get_player()
         player.set_move(int(position.strip()))
         return self._make_move()

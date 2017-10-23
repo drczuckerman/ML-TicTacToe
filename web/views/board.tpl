@@ -5,7 +5,6 @@
 % winner = game_info["winner"]
 <input id="game-over" type="hidden" value="{{1 if winner is not None else 0}}">
 
-<div class="game-container">
 <div class="status">
 % winner_piece = None
 % if winner == Board.DRAW:
@@ -45,20 +44,18 @@
 </table>
 
 <div class="status">
-% if winner is not None:
-    % winner_text = Board.get_winner_text(winner)
-    % class_name = "draw" if winner == Board.DRAW else winner_piece.lower()
-    <span class="{{class_name}}">{{winner_text}}</span>
-% end
+    % if winner is not None:
+        % winner_text = Board.get_winner_text(winner)
+        % class_name = "draw" if winner == Board.DRAW else winner_piece.lower()
+        <span class="{{class_name}}">{{winner_text}}</span>
+    % end
 </div>
 
 % if winner is not None:
-    <p>
+<p>
     <strong>Play Again?</strong><br>
     <button id="same-players-same-pieces">Same Players, Same Pieces</button>
     <button id="same-players-diff-pieces">Same Players, Diff Pieces</button>
     <button id="diff-players">Diff Players</button>
-    </p>
+</p>
 % end
-</div>
-</div>

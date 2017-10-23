@@ -9,7 +9,7 @@
     <script src="/js/game.js"></script>
 </head>
 <body>
-<h1>Machine Learning Tic-Tac-Toe</h1>
+    <h1>Machine Learning Tic-Tac-Toe</h1>
     <div id="select-container">
         % for piece_value in [Board.X, Board.O]:
             % piece = Board.format_piece(piece_value)
@@ -19,9 +19,7 @@
                 <select id="{{piece_lcase}}" class="{{piece_lcase}}">
                 % for player_type, description in \
                 %         zip(player_types.get_player_types(), player_types.get_player_descriptions()):
-                    % selected = ' selected="selected"' if player_type == player_types_dict[piece_value] \
-                    %     else ""
-                    <option value="{{player_type}}"{{selected}}>{{description}}</option>
+                    <option value="{{player_type}}">{{description}}</option>
                 % end
                 </select>
             </p>

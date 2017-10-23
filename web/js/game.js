@@ -1,5 +1,6 @@
-players = {}
 waiting_timer = null;
+player_info = {};
+game_id = null;
 
 $(document).ready(function()
 {
@@ -8,14 +9,26 @@ $(document).ready(function()
 
 function play_game()
 {
-    players = {x: $("#x").val(), o: $("#o").val()};
     disable_select_players();
     get_game();
 }
 
 function get_game()
 {
-    post_to_server("/play", players, hide_select_players_and_show_game, enable_select_players);
+    player_info = {x: $("#x").val(), o: $("#o").val()}
+    post_to_server("/play", player_info, hide_select_players_show_game_and_set_game_id,
+        hide_game_and_enable_and_show_select_players);
+}
+
+function get_player_type()
+{
+    var piece = get_current_player()
+    return player_info[piece];
+}
+
+function get_current_player()
+{
+    return $("#turn").val();
 }
 
 function post_to_server(url, data, done_function, error_function)
@@ -27,17 +40,6 @@ function post_to_server(url, data, done_function, error_function)
             contentType: "application/json",
             dataType: "html",
             data: JSON.stringify(data),
-        },
-        done_function, error_function);
-}
-
-function get_from_server(url, done_function, error_function)
-{
-    communicate_with_server(
-        {
-            method: "GET",
-            url: url,
-            dataType: "html"
         },
         done_function, error_function);
 }
@@ -79,17 +81,29 @@ function show_select_players()
     $("#select-container").show();
 }
 
-function hide_select_players_and_show_game(data)
+function hide_select_players_show_game_and_set_game_id(data)
 {
     hide_select_players();
     show_game(data);
+    game_id = $("#game-id").val();
+}
+
+function hide_game_and_enable_and_show_select_players()
+{
+    hide_game();
+    enable_select_players();
+    show_select_players();
 }
 
 function show_game(data)
 {
     show_board(data);
     indicate_not_waiting();
-    if (!is_game_over())
+    if (is_expired())
+    {
+        bind_reload_button();
+    }
+    else if (!is_game_over())
     {
         if (is_human_player())
         {
@@ -97,7 +111,7 @@ function show_game(data)
         }
         else
         {
-            setTimeout(get_computer_move, 100);
+            setTimeout(post_computer_move, 100);
         }
     }
     else
@@ -118,13 +132,12 @@ function show_board(data)
 
 function is_human_player()
 {
-    piece = get_current_player();
-    return players[piece] == "Human";
+    return get_player_type() == "Human";
 }
 
-function get_current_player()
+function is_expired()
 {
-    return $("#turn").val();
+    return $("#expired").val() == "1";
 }
 
 function is_game_over()
@@ -201,29 +214,36 @@ function post_human_move()
     var position = $.trim($(this).text());
     disable_empty_squares();
     play_human_move($(this));
-    post_to_server("/human_move", {"move": position}, show_game,
+    post_to_server("/human_move", {move: position, game_id: game_id}, show_game,
         function()
         {
             undo_human_move($(this), position); 
         });
 }
 
-function get_computer_move()
+function post_computer_move()
 {
-    get_from_server("/computer_move", show_game);
+    post_to_server("/computer_move", {game_id: game_id}, show_game);
 }
 
 function play_human_move(obj)
 {
-    var turn = get_current_player();
-    obj.removeClass("empty-disabled").addClass(turn).text(turn.toUpperCase());
+    var piece = get_current_player();
+    obj.removeClass("empty-disabled").addClass(piece).text(piece.toUpperCase());
 }
 
 function undo_human_move(obj, position)
 {
-    var turn = get_current_player();
-    obj.removeClass(turn).addClass("empty-disabled").text(position);
-    enable_empty_positions();
+    var piece = get_current_player();
+    obj.removeClass(piece).addClass("empty-disabled").text(position);
+    enable_empty_squares();
+}
+
+function bind_reload_button()
+{
+    $("#reload")
+    .unbind("click")
+    .bind("click", hide_game_and_enable_and_show_select_players);
 }
 
 function bind_and_enable_game_over_buttons()
@@ -236,19 +256,28 @@ function bind_and_enable_game_over_buttons()
     })
     .removeAttr("disabled");
 
-    $("#same-players-diff-pieces")
-    .unbind("click")
-    .bind("click", function()
+    obj = $("#same-players-diff-pieces")
+    obj.unbind("click");
+    if (player_info.x != player_info.o)
     {
-        common_button_actions(swap_players);
-    })
-    .removeAttr("disabled");
+        obj
+        .show()
+        .bind("click", function()
+        {
+            common_button_actions(swap_players);
+        })
+        .removeAttr("disabled");
+    }
+    else
+    {
+        obj.hide();
+    }
 
     $("#diff-players")
     .unbind("click")
     .bind("click", function()
     {
-        common_button_actions(select_players);
+        common_button_actions(hide_game_and_enable_and_show_select_players);
     })
     .removeAttr("disabled");
 }
@@ -268,15 +297,7 @@ function common_button_actions(play_function)
 
 function swap_players()
 {
-    var temp = $("#x").val();
-    $("#x").val($("#o").val());
-    $("#o").val(temp);
+    $("#x").val(player_info.o);
+    $("#o").val(player_info.x);
     play_game();
-}
-
-function select_players()
-{
-    show_select_players();
-    enable_select_players();
-    hide_game();
 }
