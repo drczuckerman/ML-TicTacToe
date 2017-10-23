@@ -12,15 +12,17 @@ class WebGameManager(object):
 
     def new_game(self):
         with self.lock:
-            while True:
-                game_id = str(uuid.uuid4())
-                if game_id not in self.web_game_dict:
-                    break
-
+            game_id = self._get_game_id()
             game = WebGame()
             self.web_game_dict[game_id] = {"game": game, "time": time.time()}
             return game_id, game
 
+    def _get_game_id(self):
+            while True:
+                game_id = str(uuid.uuid4())
+                if game_id not in self.web_game_dict:
+                    return game_id
+    
     def get_game(self, game_id):
         with self.lock:
             return self.web_game_dict.get(game_id, {}).get("game")
@@ -40,17 +42,19 @@ class WebGameManager(object):
         return False
 
     def expire_games(self):
-        expired_game_ids = []
         with self.lock:
-            current_time = time.time()
-            for game_id, game_info in self.web_game_dict.items():
-                elapsed_time = current_time - game_info["time"]
-                if elapsed_time >= self.EXPIRE_TIME:
-                    expired_game_ids.append(game_id)
-
-            for game_id in expired_game_ids:
+            for game_id in self._get_expired_game_ids():
                 del self.web_game_dict[game_id]
 
+    def _get_expired_game_ids(self):
+        expired_game_ids = []
+        current_time = time.time()
+        for game_id, game_info in self.web_game_dict.items():
+            elapsed_time = current_time - game_info["time"]
+            if elapsed_time >= self.EXPIRE_TIME:
+                expired_game_ids.append(game_id)
+        return expired_game_ids
+    
 def start_web_game_manager_thread(web_game_manager):
     def run():
         while True:
