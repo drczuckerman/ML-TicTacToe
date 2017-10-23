@@ -1,8 +1,4 @@
-import os
-import web_utils
-import player_types
 from bottle import get, post, run, static_file, request, response
-from board import Board
 from web_game_manager import WebGameManager, start_web_game_manager_thread
 from web_utils import get_template
 
