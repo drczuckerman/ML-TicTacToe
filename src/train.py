@@ -6,7 +6,6 @@ import utils
 import player_types
 from board import Board
 from learning_computer_player import run_if_learner
-from td_learning_player import TDLearningPlayer
 from random_player import RandomPlayer
 from game_controller import GameController
 
