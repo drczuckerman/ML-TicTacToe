@@ -3,6 +3,7 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Machine Learning Tic-Tac-Toe</title>
     <link rel="stylesheet" type="text/css" href="/css/style.css">
     <link rel="icon" type="image/x-icon" href="/favicon.ico">
     <script src="/js/jquery.js"></script>
