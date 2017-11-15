@@ -92,6 +92,7 @@ class Visualizer(object):
             self._plot_best_move(ax[row][col], game_controller)
             winner, _ = game_controller.make_move()
             move_number += 1
+        plt.show()
 
     def _plot_best_move(self, ax, game_controller):
         self._plot_move_values(ax, game_controller)
@@ -119,10 +120,17 @@ class Visualizer(object):
                  ax.text(x+0.5, y+0.5, Board.format_piece(piece), fontdict=font, ha="center", va="center")
 
 def main(args=sys.argv[1:]):
-    plt.interactive(True)
+    is_windows = sys.platform.lower().startswith("win")
+    if is_windows:
+        print("Close the current graph to see the next one")
+    else:
+        plt.interactive(True)
+
     visualizer = Visualizer(args)
     visualizer.visualize()
-    input("Press ENTER to continue...")
+
+    if not is_windows:
+        input("Press ENTER to continue...")
     return 0
 
 if __name__ == "__main__":
