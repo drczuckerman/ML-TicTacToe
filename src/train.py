@@ -129,8 +129,8 @@ class Trainer(object):
         self._save_stats(stats)
 
     def show_num_states(self):
-        print("X has trained {} states".format(len(self.player1.values)))
-        print("O has trained {} states".format(len(self.player2.values)))
+        print("X has trained {} states".format(self.player1.get_num_states()))
+        print("O has trained {} states".format(self.player2.get_num_states()))
 
 def main(args=sys.argv[1:]):
     trainer = Trainer(args)

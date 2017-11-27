@@ -13,9 +13,10 @@ from board_test_utils import get_board_state_tuple, set_board, assert_get_move_i
     assert_get_move_values_are
 from mock_random import MockRandom
 
-class TestTdLearningPlayer(unittest.TestCase):
+class TestTDLearningPlayer(unittest.TestCase):
     def setUp(self):
         self.player = TDLearningPlayer()
+        self.file_name_prefix = "TDLearningPlayer"
         self.board = Board()
         self.player.set_board(self.board)
         self.player.enable_learning()
@@ -31,10 +32,12 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.player.set_piece(piece)
         self.assertAlmostEqual(reward, self.player._get_reward(winner))
         
-    def assert_get_value_is(self, value, pieces, winner, piece):
+    def assert_get_value_and_state_is(self, value, pieces, winner, piece):
         self.player.set_piece(piece)
         state = get_board_state_tuple(pieces)
-        self.assertAlmostEqual(value, self.player._get_value(state, winner))
+        current_value, new_state = self.player._get_value_and_state(state, winner)
+        self.assertAlmostEqual(value, current_value)
+        self.assertEqual(state, new_state)
         self.assertIn(state, self.player.values)
         
     def assert_values_after_reward_are(self, values, pieces_list, winner):
@@ -45,7 +48,9 @@ class TestTdLearningPlayer(unittest.TestCase):
             self.player.store_state()
             values_dict[get_board_state_tuple(pieces)] = value
         self.player.set_reward(winner)
-        self.assertEqual(values_dict, self.player.values)
+        self.assertEqual(sorted(values_dict.keys()), sorted(self.player.values.keys()))
+        for key, value in self.player.values.items():
+            self.assertAlmostEqual(self.player.values[key], value)
 
     @patch('builtins.open', create=True)
     def assert_load_values_are(self, values, piece, filename, open_mock):
@@ -199,29 +204,29 @@ class TestTdLearningPlayer(unittest.TestCase):
         self.assert_get_reward_is(0.48, Board.DRAW, Board.X)
         self.assert_get_reward_is(0.52, Board.DRAW, Board.O)
 
-    def test_get_value_returns_0_5_if_non_ending_state_not_stored(self):
-        self.assert_get_value_is(0.5, "X--|---|---", None, Board.X)
+    def test_get_value_and_state_returns_0_5_if_non_ending_state_not_stored(self):
+        self.assert_get_value_and_state_is(0.5, "X--|---|---", None, Board.X)
 
-    def test_get_value_returns_1_if_winning_state(self):
-        self.assert_get_value_is(1.0, "O-O|XXX|---", Board.X, Board.X)
-        self.assert_get_value_is(1.0, "OX-|O-X|OX-", Board.O, Board.O)
+    def test_get_value_and_state_returns_1_if_winning_state(self):
+        self.assert_get_value_and_state_is(1.0, "O-O|XXX|---", Board.X, Board.X)
+        self.assert_get_value_and_state_is(1.0, "OX-|O-X|OX-", Board.O, Board.O)
 
-    def test_get_value_returns_0_if_losing_state(self):
-        self.assert_get_value_is(0.0, "XOX|-O-|XO-", Board.O, Board.X)
-        self.assert_get_value_is(0.0, "--X|OX-|XO-", Board.X, Board.O)
+    def test_get_value_and_state_returns_0_if_losing_state(self):
+        self.assert_get_value_and_state_is(0.0, "XOX|-O-|XO-", Board.O, Board.X)
+        self.assert_get_value_and_state_is(0.0, "--X|OX-|XO-", Board.X, Board.O)
 
-    def test_get_value_returns_draw_reward_if_draw_state(self):
+    def test_get_value_and_state_returns_draw_reward_if_draw_state(self):
         self.player.set_params(x_draw_reward=0.3, o_draw_reward=0.7)
-        self.assert_get_value_is(0.3, "XXO|OOX|XOX", Board.DRAW, Board.X)
-        self.assert_get_value_is(0.7, "OOX|XXO|OXO", Board.DRAW, Board.O)
+        self.assert_get_value_and_state_is(0.3, "XXO|OOX|XOX", Board.DRAW, Board.X)
+        self.assert_get_value_and_state_is(0.7, "OOX|XXO|OXO", Board.DRAW, Board.O)
 
-    def test_get_value_returns_current_value_if_state_known(self):
+    def test_get_value_and_state_returns_current_value_if_state_known(self):
         state1 = get_board_state_tuple("X--|---|---")
         state2 = get_board_state_tuple("XO-|---|---")
         self.player.values[state1] = 0.6
         self.player.values[state2] = 0.3
-        self.assert_get_value_is(0.6, "X--|---|---", None, Board.X)
-        self.assert_get_value_is(0.3, "XO-|---|---", None, Board.O)
+        self.assert_get_value_and_state_is(0.6, "X--|---|---", None, Board.X)
+        self.assert_get_value_and_state_is(0.3, "XO-|---|---", None, Board.O)
 
     def test_set_reward_updates_values_for_each_state(self):
         self.player.set_params(alpha=0.4)
@@ -292,6 +297,15 @@ class TestTdLearningPlayer(unittest.TestCase):
         random_mock.assert_not_called()
         choice_mock.assert_called_once_with([4])
 
+    def test_get_num_states_returns_zero_initially(self):
+        self.assertEqual(0, self.player.get_num_states())
+
+    def test_get_num_states_returns_correct_num_of_states(self):
+        self.player.values[get_board_state_tuple("---|-X-|---")] = 0.9
+        self.player.values[get_board_state_tuple("---|-X-|--O")] = 0.75
+        self.player.values[get_board_state_tuple("---|XX-|--O")] = 0.7
+        self.assertEqual(3, self.player.get_num_states())
+
     def test_get_move_values_returns_move_values_for_available_moves(self):
         self.player.values[get_board_state_tuple("XOO|---|-X-")] = 0.7
         self.player.values[get_board_state_tuple("XO-|O--|-X-")] = 0.65
@@ -305,19 +319,19 @@ class TestTdLearningPlayer(unittest.TestCase):
         
     def test_load_stores_values_for_x(self):
         values = {"foo": "bar"}
-        self.assert_load_values_are(values, Board.X, "TDLearningPlayerX.pkl")
+        self.assert_load_values_are(values, Board.X, self.file_name_prefix + "X.pkl")
 
     def test_load_stores_values_for_o(self):
         values = {"bar": "foo"}
-        self.assert_load_values_are(values, Board.O, "TDLearningPlayerO.pkl")
+        self.assert_load_values_are(values, Board.O, self.file_name_prefix + "O.pkl")
 
     def test_save_stores_values_for_x(self):
         values = {"baz": "quux"}
-        self.assert_save_values_are(values, Board.X, "TDLearningPlayerX.pkl")
+        self.assert_save_values_are(values, Board.X, self.file_name_prefix + "X.pkl")
 
     def test_save_stores_values_for_o(self):
         values = {"quux": "baz"}
-        self.assert_save_values_are(values, Board.O, "TDLearningPlayerO.pkl")
+        self.assert_save_values_are(values, Board.O, self.file_name_prefix + "O.pkl")
 
     def test_indicate_move(self):
         self.assertEqual("My move is 8", self.player.indicate_move(7))

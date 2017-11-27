@@ -34,6 +34,9 @@ class LearningComputerPlayer(ComputerPlayer):
     def get_move_values(self):
         pass
 
+    def get_num_states(self):
+        pass
+
     def load(self, piece):
         pass
 

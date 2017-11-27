@@ -43,20 +43,23 @@ class TDLearningPlayer(LearningComputerPlayer):
             return 1.0
         return 0.0
 
-    def _get_value(self, state, winner=None):
-        value = self.values.get(state)
+    def _get_value_and_state(self, state, winner=None):
+        value, new_state = self._find_value_and_state(state)
         if value is None:
             value = 0.5 if winner is None else self._get_reward(winner)
-            self.values[state] = value
-        return value
+            self.values[new_state] = value
+        return value, new_state
+
+    def _find_value_and_state(self, state):
+        return self.values.get(state), state
 
     def set_reward(self, winner):
         if self.learning:
-            last_value = self._get_value(self.states[-1], winner)
+            last_value, _ = self._get_value_and_state(self.states[-1], winner)
             for state in reversed(self.states[:-1]):
-                current_value = self._get_value(state)
+                current_value, new_state = self._get_value_and_state(state)
                 current_value += self.alpha*(last_value - current_value)
-                self.values[state] = current_value
+                self.values[new_state] = current_value
                 last_value = current_value
 
     def get_move(self):
@@ -81,9 +84,12 @@ class TDLearningPlayer(LearningComputerPlayer):
         move_values = {}
         for position in self.board.get_available_moves():
             with self.board.try_move(position, self.piece) as (winner, state):
-                move_values[position] = self._get_value(state, winner)
+                move_values[position], _ = self._get_value_and_state(state, winner)
 
         return move_values
+
+    def get_num_states(self):
+        return len(self.values)
 
     def load(self, piece):
         self.values = self._load_file(piece)

@@ -1,11 +1,14 @@
 from operator import itemgetter
 from td_learning_player import TDLearningPlayer
+from td_symmetric_learning_player import TDSymmetricLearningPlayer
 from random_player import RandomPlayer
 from human_player import HumanPlayer
 
 LEARNERS = \
 {
-    "TD": {"class": TDLearningPlayer, "description": "Temporal Difference Learning Player"}
+    "TD": {"class": TDLearningPlayer, "description": "Temporal Difference Learning Player"},
+    "TDS": {"class": TDSymmetricLearningPlayer,
+            "description": "Temporal Difference Symmetric Learning Player"}
 }
 NON_LEARNERS = \
 {

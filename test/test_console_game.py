@@ -6,6 +6,7 @@ from board import Board
 from human_player import HumanPlayer
 from random_player import RandomPlayer
 from td_learning_player import TDLearningPlayer
+from td_symmetric_learning_player import TDSymmetricLearningPlayer
 from learning_computer_player import LearningComputerPlayer
 from console_game import ConsoleGame, main
 from board_test_utils import get_expected_formatted_board
@@ -272,6 +273,14 @@ Select action:
             player_class=TDLearningPlayer)
         load_mock.assert_called_once_with(Board.X)
 
+    @patch('td_symmetric_learning_player.TDSymmetricLearningPlayer.load')
+    def test_select_player_for_x_td_symmetric_learning_player_loads_values(self, load_mock):
+        self.assert_select_player_selects(
+            piece=Board.X,
+            menu_items=["4"],
+            player_class=TDLearningPlayer)
+        load_mock.assert_called_once_with(Board.X)
+
     def test_select_player_indicates_invalid_selection(self):
         self.assert_select_player_selects(
             piece=Board.X,
@@ -401,4 +410,3 @@ Select action:
     def test_main(self, play_mock):
         self.assertEqual(0, main([]))
         play_mock.assert_called_once_with()
-

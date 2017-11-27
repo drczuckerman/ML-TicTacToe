@@ -74,7 +74,7 @@ class CompeteRandom(Game):
         if losing_moves:
             print("- Losing moves:")
             for losing_moves in losing_moves:
-                print("- - {}".format(", ".join(losing_moves)))
+                print("- - {}".format(", ".join(map(str, losing_moves))))
 
     def save_results(self, results):
         with open(utils.get_path("data", self.player1.__class__.__name__ + "LosingResults.pkl"), "wb") as f:
